@@ -1,6 +1,9 @@
 
 from pyModbusTCP.client import ModbusClient
 
+#*****************************
+#*          MODBUS           *
+#*****************************
 class MODBUS():
     # REF: https://pymodbus.readthedocs.io/en/latest/readme.html
     def __init__(self,ip,port):
@@ -50,6 +53,9 @@ class MODBUS():
         print("Modbus write reg value: %r" % val)
         return self.client.write_single_register(addr, val)
 
+#*****************************
+#*            BIT            *
+#*****************************
 class BIT():
     def __init__(self,addr,modbus):
         self.addr = addr -1
@@ -73,6 +79,9 @@ class BIT():
         #print ("BIT Val: %r" % self.value)
         return self.value
 
+#*****************************
+#*         REGISTER          *
+#*****************************
 class REGISTER():
     def __init__(self,addr,modbus):
         self.addr = addr -1
@@ -88,7 +97,9 @@ class REGISTER():
         #print ("REG Val: %r" % self.value)
         return self.value
     
-    
+#*****************************
+#*           HBW             *
+#*****************************    
 class HBW():
     def __init__(self,modbus):
         self.Task1 =        BIT(101,modbus)
@@ -113,8 +124,11 @@ class HBW():
         self.Task1.set()
         self.Task1.clear()
         return 1
-        
-class MPO():
+
+#*****************************
+#*            VGR            *
+#*****************************     
+class VGR():
     def __init__(self,modbus):
         self.status_ready = BIT(50,modbus)
         self.status_flag1 = BIT(51,modbus)
@@ -128,6 +142,28 @@ class MPO():
     def StartTask1(self):
         self.Task1.set()
         return 1
+
+#*****************************
+#*            MPO            *
+#*****************************     
+class MPO():
+    def __init__(self,modbus):
+        self.Task1 =        BIT(800,modbus)
+        self.status_ready = BIT(50,modbus)
+        #self.status_flag1 = BIT(51,modbus)
+        #self.status_flag2 = BIT(52,modbus)
+        
+
+    def IsReady(self):
+        return self.status_ready.read()
+    
+    def StartTask1(self):
+        self.Task1.set()
+        return 1
+
+#*****************************
+#*           SSC             *
+#*****************************
 class SSC():
     def __init__(self,modbus):
         self.GLED = BIT(60,modbus)
@@ -156,6 +192,9 @@ class SSC():
         else:
             self.RLED.clear()
 
+#*****************************
+#*         FACTORY           *
+#*****************************
 class FACTORY():
     def __init__(self, ip, port):
         self.mb = MODBUS(ip, port)
@@ -172,12 +211,14 @@ class FACTORY():
     def restock(self):
         pass
 
+#*****************************
+#*          TESTS            *
+#*****************************
+#factory = FACTORY(ip="192.101.98.246",port=502)
 
-factory = FACTORY(ip="192.101.98.246",port=502)
-
-factory.order()
-factory.status()
-factory.restock()
+#factory.order()
+#factory.status()
+#factory.restock()
 '''
 # Quick test object to validate modbus communications
 c = MODBUS("129.101.98.246", 502)
@@ -195,6 +236,9 @@ v.write(2)
 print(v.read())
 '''
 
+#*****************************
+#*           MAIN            *
+#*****************************
 if __name__ == '__main__':
     mb = MODBUS('129.101.98.246', 502)
     # mb = simbus() # Simulator
@@ -207,6 +251,9 @@ if __name__ == '__main__':
     hbw.IsReady()
     #hbw.IsFault()
     
+    #if all are ready with no faults then run make an order
+    # HBW(x,y) task1 -> VGR task1 -> MPO(disk color) task1 -> SSC task1
+
     if hbw.IsReady():
         hbw.StartTask1(1,2)
     '''
