@@ -6,19 +6,24 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>474</width>
-    <height>353</height>
+    <width>510</width>
+    <height>338</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(35, 26, 16);
+selection-color: rgb(157, 103, 106);
+selection-background-color: rgb(255, 150, 63);</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>60</y>
+      <x>80</x>
+      <y>70</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -28,18 +33,26 @@
       <pointsize>17</pointsize>
      </font>
     </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(97, 68, 45);
+border-color: rgb(170, 120, 78);</string>
+    </property>
     <property name="text">
-     <string>START</string>
+     <string>HBW T1</string>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBox_x">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>30</y>
+      <x>150</x>
+      <y>40</y>
       <width>48</width>
       <height>26</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 150, 63);
+background-color: rgb(97, 68, 45);</string>
     </property>
     <property name="minimum">
      <number>1</number>
@@ -51,11 +64,15 @@
    <widget class="QSpinBox" name="spinBox_y">
     <property name="geometry">
      <rect>
-      <x>130</x>
-      <y>30</y>
+      <x>210</x>
+      <y>40</y>
       <width>48</width>
       <height>26</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 150, 63);
+background-color: rgb(97, 68, 45);</string>
     </property>
     <property name="minimum">
      <number>1</number>
@@ -67,8 +84,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>80</x>
-      <y>10</y>
+      <x>160</x>
+      <y>20</y>
       <width>16</width>
       <height>17</height>
      </rect>
@@ -77,6 +94,9 @@
      <font>
       <pointsize>17</pointsize>
      </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(132, 153, 80);</string>
     </property>
     <property name="text">
      <string>X</string>
@@ -85,8 +105,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>10</y>
+      <x>220</x>
+      <y>20</y>
       <width>16</width>
       <height>17</height>
      </rect>
@@ -96,6 +116,9 @@
       <pointsize>17</pointsize>
      </font>
     </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(132, 153, 80);</string>
+    </property>
     <property name="text">
      <string>Y</string>
     </property>
@@ -103,8 +126,8 @@
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
-      <x>130</x>
-      <y>60</y>
+      <x>210</x>
+      <y>70</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -114,15 +137,19 @@
       <pointsize>17</pointsize>
      </font>
     </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(97, 68, 45);
+border-color: rgb(170, 120, 78);</string>
+    </property>
     <property name="text">
-     <string>TASK 2</string>
+     <string>HBW T2</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_3">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>130</y>
+      <x>80</x>
+      <y>170</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -132,8 +159,140 @@
       <pointsize>17</pointsize>
      </font>
     </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(97, 68, 45);
+border-color: rgb(170, 120, 78);</string>
+    </property>
     <property name="text">
      <string>MPO T1</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_4">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>120</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>17</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(97, 68, 45);
+border-color: rgb(170, 120, 78);</string>
+    </property>
+    <property name="text">
+     <string>VGR T1</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_5">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>220</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>17</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(97, 68, 45);
+border-color: rgb(170, 120, 78);</string>
+    </property>
+    <property name="text">
+     <string>SLD T1</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>80</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>17</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(132, 153, 80);</string>
+    </property>
+    <property name="text">
+     <string>HBW</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>130</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>17</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(132, 153, 80);</string>
+    </property>
+    <property name="text">
+     <string>VGR</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>180</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>17</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(132, 153, 80);</string>
+    </property>
+    <property name="text">
+     <string>MPO</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>230</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>17</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(132, 153, 80);</string>
+    </property>
+    <property name="text">
+     <string>SLD</string>
     </property>
    </widget>
   </widget>
@@ -142,7 +301,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>474</width>
+     <width>510</width>
      <height>22</height>
     </rect>
    </property>

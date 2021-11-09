@@ -13,7 +13,14 @@ class UI(QMainWindow):
         super(UI, self).__init__()
         mb = MODBUS('129.101.98.246', 502)
         self.hbw = HBW(mb)
+        self.vgr = VGR(mb)
+        self.mpo = MPO(mb)
+        self.sld = SLD(mb)
+        #check ready status
         self.hbw.IsReady()
+        self.vgr.IsReady()
+        self.mpo.IsReady()
+        self.sld.IsReady()
 
         #Load UI File
         uic.loadUi("FactoryUI.ui", self)
@@ -23,16 +30,22 @@ class UI(QMainWindow):
         self.spinBoxY = self.findChild(QSpinBox, "spinBox_y")
         self.t1button_hbw = self.findChild(QPushButton, "pushButton")
         self.t2button_hbw = self.findChild(QPushButton, "pushButton_2")
+        self.t1button_vgr = self.findChild(QPushButton, "pushButton_4")
+        self.t1button_mpo = self.findChild(QPushButton, "pushButton_3")
+        self.t1button_sld = self.findChild(QPushButton, "pushButton_5")
 
         #Actions
-        self.t1button_hbw.clicked.connect(self.clicker)
-        self.t2button_hbw.clicked.connect(self.t1clicker)
+        self.t1button_hbw.clicked.connect(self.hbw_t1_clicker)
+        self.t2button_hbw.clicked.connect(self.hbw_t2_clicker)
+        self.t1button_vgr.clicked.connect(self.vgr_t1_clicker)
+        self.t1button_mpo.clicked.connect(self.mpo_t1_clicker)
+        self.t1button_sld.clicked.connect(self.sld_t1_clicker)
         
         #Show App
         self.show()
 
     # Actions when the HBW task 1 button is clicked
-    def clicker(self):  
+    def hbw_t1_clicker(self):  
         print(self.spinBoxX.cleanText())
         x_value = int(self.spinBoxX.cleanText())
         print(self.spinBoxY.cleanText())
@@ -43,7 +56,7 @@ class UI(QMainWindow):
         return 1
 
     # Actions when the HBW task 2 button is clicked
-    def t1clicker(self):
+    def hbw_t2_clicker(self):
         print(self.spinBoxX.cleanText())
         x_value = int(self.spinBoxX.cleanText())
         print(self.spinBoxY.cleanText())
@@ -51,6 +64,24 @@ class UI(QMainWindow):
 
         if self.hbw.IsReady():
             self.hbw.StartTask2(x_value, y_value)
+        return 1
+
+    # Actions when the vgr task 1 button is clicked
+    def vgr_t1_clicker(self):
+        if self.vgr.IsReady():
+            self.vgr.StartTask1()#Add values to change 
+        return 1
+
+    # Actions when the MPO task 1 button is clicked
+    def mpo_t1_clicker(self):
+        if self.mpo.IsReady():
+            self.mpo.StartTask1()#Add values to change 
+        return 1
+
+    # Actions when the SLD task 1 button is clicked
+    def sld_t1_clicker(self):
+        if self.sld.IsReady():
+            self.sld.StartTask1()#Add values to change 
         return 1
 
 #*****************************
@@ -128,7 +159,7 @@ class BIT():
 
     def read(self):
         self.value = self.mb.read_coil(self.addr)
-        #print ("BIT Val: %r" % self.value)
+        print ("BIT Val: %r" % self.value)
         return self.value
 
 #*****************************
@@ -190,17 +221,18 @@ class HBW():
 #*****************************     
 class VGR():
     def __init__(self,modbus):
-        self.status_ready = BIT(50,modbus)
-        self.status_flag1 = BIT(51,modbus)
-        self.status_flag2 = BIT(52,modbus)
-        self.Task1 =        BIT(53,modbus)
-        self.Task2 =        BIT(54,modbus)
-
+        self.Task1 =        BIT(201,modbus)
+        #self.Task2 =        BIT(54,modbus)
+        self.status_ready = BIT(202,modbus)
+        #self.status_flag1 = BIT(51,modbus)
+        #self.status_flag2 = BIT(52,modbus)
+        
     def IsReady(self):
         return self.status_ready.read()
     
     def StartTask1(self):
         self.Task1.set()
+        self.Task1.clear()
         return 1
 
 #*****************************
@@ -208,17 +240,36 @@ class VGR():
 #*****************************     
 class MPO():
     def __init__(self,modbus):
-        self.Task1 =        BIT(800,modbus)
-        self.status_ready = BIT(50,modbus)
+        self.Task1 =        BIT(400,modbus)
+        self.status_ready = BIT(402,modbus)
         #self.status_flag1 = BIT(51,modbus)
         #self.status_flag2 = BIT(52,modbus)
-        
 
     def IsReady(self):
         return self.status_ready.read()
     
     def StartTask1(self):
         self.Task1.set()
+        #self.Task1.clear()
+        return 1
+
+#*****************************
+#*            SLD            *
+#*****************************
+class SLD():
+    def __init__(self,modbus):
+        self.Task1 =        BIT(800,modbus)
+        self.status_ready = BIT(808,modbus)
+        self.status_flag1 = BIT(809,modbus) # mc809 white, mc810 red, mc811 blue,  812, 813, 814 are faults
+        #self.status_flag2 = BIT(52,modbus) 
+
+    def IsReady(self):
+        print("HERE: ", self.status_ready.read())
+        return self.status_ready.read()
+    
+    def StartTask1(self):
+        self.Task1.set()
+        self.Task1.clear()
         return 1
 
 #*****************************
@@ -321,10 +372,6 @@ if __name__ == '__main__':
 
     #if all are ready with no faults then run make an order
     # HBW(x,y) task1 -> VGR task1 -> MPO(disk color) task1 -> SSC task1
-
-    #if hbw.IsReady():
-        #hbw.StartTask2(1,2)
-
 
     '''
     if mpo.IsReady():
