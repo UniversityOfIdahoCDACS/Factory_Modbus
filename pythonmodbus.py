@@ -1,5 +1,57 @@
-
+from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QPushButton, QSpinBox
 from pyModbusTCP.client import ModbusClient
+from PyQt5 import uic
+import FactoryUI
+import time
+import sys
+
+#*****************************
+#*            UI             *
+#*****************************
+class UI(QMainWindow):
+    def __init__(self):
+        super(UI, self).__init__()
+        mb = MODBUS('129.101.98.246', 502)
+        self.hbw = HBW(mb)
+        self.hbw.IsReady()
+
+        #Load UI File
+        uic.loadUi("FactoryUI.ui", self)
+
+        #Define Widgets
+        self.spinBoxX = self.findChild(QSpinBox, "spinBox_x")
+        self.spinBoxY = self.findChild(QSpinBox, "spinBox_y")
+        self.t1button_hbw = self.findChild(QPushButton, "pushButton")
+        self.t2button_hbw = self.findChild(QPushButton, "pushButton_2")
+
+        #Actions
+        self.t1button_hbw.clicked.connect(self.clicker)
+        self.t2button_hbw.clicked.connect(self.t1clicker)
+        
+        #Show App
+        self.show()
+
+    # Actions when the HBW task 1 button is clicked
+    def clicker(self):  
+        print(self.spinBoxX.cleanText())
+        x_value = int(self.spinBoxX.cleanText())
+        print(self.spinBoxY.cleanText())
+        y_value = int(self.spinBoxY.cleanText())
+
+        if self.hbw.IsReady():
+            self.hbw.StartTask1(x_value, y_value)
+        return 1
+
+    # Actions when the HBW task 2 button is clicked
+    def t1clicker(self):
+        print(self.spinBoxX.cleanText())
+        x_value = int(self.spinBoxX.cleanText())
+        print(self.spinBoxY.cleanText())
+        y_value = int(self.spinBoxY.cleanText())
+
+        if self.hbw.IsReady():
+            self.hbw.StartTask2(x_value, y_value)
+        return 1
 
 #*****************************
 #*          MODBUS           *
@@ -103,6 +155,7 @@ class REGISTER():
 class HBW():
     def __init__(self,modbus):
         self.Task1 =        BIT(101,modbus)
+        self.Task2 =        BIT(102,modbus)
         self.slot_x =       REGISTER(105,modbus)
         self.slot_y =       REGISTER(106,modbus)
         self.status_ready = BIT(130,modbus)
@@ -113,16 +166,23 @@ class HBW():
         return self.status_ready.read()
     
     def StartTask1(self,x,y):
-        #self.write_reg(self.slot_x.addr, x)
-        #self.write_reg(self.slot_y.addr, y)
         # wait or verify
-        #self.write_coils(self.Task1.addr, 1)
         self.slot_x.write(x)
         self.slot_y.write(y)
         # wait or verify
         #Set task one and clear it (simuler to pressing HMI button)
         self.Task1.set()
         self.Task1.clear()
+        return 1
+
+    def StartTask2(self,x,y):
+        # wait or verify
+        self.slot_x.write(x)
+        self.slot_y.write(y)
+        # wait or verify
+        #Set task two and clear it (simuler to pressing HMI button)
+        self.Task2.set()
+        self.Task2.clear()
         return 1
 
 #*****************************
@@ -240,22 +300,32 @@ print(v.read())
 #*           MAIN            *
 #*****************************
 if __name__ == '__main__':
-    mb = MODBUS('129.101.98.246', 502)
+    #mb = MODBUS('129.101.98.246', 502)
     # mb = simbus() # Simulator
 
-    hbw = HBW(mb)
-    mpo = MPO(mb)
-    ssc = SSC(mb)
+    #hbw = HBW(mb)
+    #mpo = MPO(mb)
+    #ssc = SSC(mb)
 
     #hbw.Reset()
-    hbw.IsReady()
+    #hbw.IsReady()
     #hbw.IsFault()
-    
+
+    #if hbw.IsReady():
+        #hbw.StartTask1(1,2)
+
+    #Initialize UI App
+    app = QApplication(sys.argv)
+    UIWindow = UI()
+    app.exec_()
+
     #if all are ready with no faults then run make an order
     # HBW(x,y) task1 -> VGR task1 -> MPO(disk color) task1 -> SSC task1
 
-    if hbw.IsReady():
-        hbw.StartTask1(1,2)
+    #if hbw.IsReady():
+        #hbw.StartTask2(1,2)
+
+
     '''
     if mpo.IsReady():
         mpo.StartTask1()
