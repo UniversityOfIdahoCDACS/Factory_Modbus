@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>510</width>
-    <height>338</height>
+    <width>523</width>
+    <height>453</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@ selection-background-color: rgb(255, 150, 63);</string>
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>70</y>
+      <y>120</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -127,7 +127,7 @@ background-color: rgb(97, 68, 45);</string>
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>70</y>
+      <y>120</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -149,7 +149,7 @@ border-color: rgb(170, 120, 78);</string>
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>170</y>
+      <y>220</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -171,7 +171,7 @@ border-color: rgb(170, 120, 78);</string>
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>120</y>
+      <y>170</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -193,7 +193,7 @@ border-color: rgb(170, 120, 78);</string>
     <property name="geometry">
      <rect>
       <x>80</x>
-      <y>220</y>
+      <y>270</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -215,7 +215,7 @@ border-color: rgb(170, 120, 78);</string>
     <property name="geometry">
      <rect>
       <x>340</x>
-      <y>80</y>
+      <y>130</y>
       <width>51</width>
       <height>21</height>
      </rect>
@@ -236,7 +236,7 @@ border-color: rgb(170, 120, 78);</string>
     <property name="geometry">
      <rect>
       <x>340</x>
-      <y>130</y>
+      <y>180</y>
       <width>51</width>
       <height>21</height>
      </rect>
@@ -257,7 +257,7 @@ border-color: rgb(170, 120, 78);</string>
     <property name="geometry">
      <rect>
       <x>340</x>
-      <y>180</y>
+      <y>230</y>
       <width>51</width>
       <height>21</height>
      </rect>
@@ -278,7 +278,7 @@ border-color: rgb(170, 120, 78);</string>
     <property name="geometry">
      <rect>
       <x>340</x>
-      <y>230</y>
+      <y>280</y>
       <width>51</width>
       <height>21</height>
      </rect>
@@ -295,13 +295,35 @@ border-color: rgb(170, 120, 78);</string>
      <string>SLD</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_6">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>70</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>17</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(97, 68, 45);
+border-color: rgb(170, 120, 78);</string>
+    </property>
+    <property name="text">
+     <string>START</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>510</width>
+     <width>523</width>
      <height>22</height>
     </rect>
    </property>

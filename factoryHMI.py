@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QPushButton, QSpinBox
 from apscheduler.schedulers.background import BackgroundScheduler
 from pyModbusTCP.client import ModbusClient
+import factoryModbus as fm
 from PyQt5 import uic
 import FactoryUI
-import factoryModbus as fm
 import time
 import sys
 
@@ -13,11 +13,11 @@ import sys
 class UI(QMainWindow):
     def __init__(self):
         super(UI, self).__init__()
-        mb = MODBUS('129.101.98.246', 502)
-        self.hbw = HBW(mb)
-        self.vgr = VGR(mb)
-        self.mpo = MPO(mb)
-        self.sld = SLD(mb)
+        mb = fm.MODBUS('129.101.98.246', 502)
+        self.hbw = fm.HBW(mb)
+        self.vgr = fm.VGR(mb)
+        self.mpo = fm.MPO(mb)
+        self.sld = fm.SLD(mb)
         #check ready status
         self.hbw.IsReady()
         self.vgr.IsReady()
