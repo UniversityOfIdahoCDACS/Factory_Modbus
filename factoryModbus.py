@@ -1,10 +1,11 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QPushButton, QSpinBox
+from apscheduler.schedulers.background import BackgroundScheduler
 from pyModbusTCP.client import ModbusClient
 from PyQt5 import uic
 import FactoryUI
 import time
 import sys
-
+'''
 #*****************************
 #*            UI             *
 #*****************************
@@ -33,6 +34,7 @@ class UI(QMainWindow):
         self.t1button_vgr = self.findChild(QPushButton, "pushButton_4")
         self.t1button_mpo = self.findChild(QPushButton, "pushButton_3")
         self.t1button_sld = self.findChild(QPushButton, "pushButton_5")
+        self.button_start = self.findChild(QPushButton, "pushButton_6")
 
         #Actions
         self.t1button_hbw.clicked.connect(self.hbw_t1_clicker)
@@ -40,50 +42,84 @@ class UI(QMainWindow):
         self.t1button_vgr.clicked.connect(self.vgr_t1_clicker)
         self.t1button_mpo.clicked.connect(self.mpo_t1_clicker)
         self.t1button_sld.clicked.connect(self.sld_t1_clicker)
+        self.button_start.clicked.connect(self.start_clicker)
         
         #Show App
         self.show()
 
     # Actions when the HBW task 1 button is clicked
     def hbw_t1_clicker(self):  
-        print(self.spinBoxX.cleanText())
+        #print(self.spinBoxX.cleanText())
+        #print(self.spinBoxY.cleanText())
         x_value = int(self.spinBoxX.cleanText())
-        print(self.spinBoxY.cleanText())
         y_value = int(self.spinBoxY.cleanText())
 
-        if self.hbw.IsReady():
+        ready_status = str(self.hbw.IsReady())
+        if ready_status == "True":
+            print("HBW Is Ready: "+ready_status)
             self.hbw.StartTask1(x_value, y_value)
+        else:
+            print("HBW Is Not Ready: "+ready_status)
         return 1
 
     # Actions when the HBW task 2 button is clicked
     def hbw_t2_clicker(self):
-        print(self.spinBoxX.cleanText())
+        #print(self.spinBoxX.cleanText())
+        #print(self.spinBoxY.cleanText())
         x_value = int(self.spinBoxX.cleanText())
-        print(self.spinBoxY.cleanText())
         y_value = int(self.spinBoxY.cleanText())
 
-        if self.hbw.IsReady():
+        ready_status = str(self.hbw.IsReady())
+        if ready_status == "True":
+            print("HBW Is Ready: "+ready_status)
             self.hbw.StartTask2(x_value, y_value)
+        else:
+            print("HBW Is Not Ready: "+ready_status)
         return 1
 
     # Actions when the vgr task 1 button is clicked
-    def vgr_t1_clicker(self):
-        if self.vgr.IsReady():
+    def vgr_t1_clicker(self):    
+        ready_status = str(self.vgr.IsReady())
+        if ready_status == "True":
+            print("VGR Is Ready: "+ready_status)
             self.vgr.StartTask1()#Add values to change 
+        else:
+            print("VGR Is Not Ready: "+ready_status)
         return 1
 
     # Actions when the MPO task 1 button is clicked
     def mpo_t1_clicker(self):
-        if self.mpo.IsReady():
+        ready_status = str(self.mpo.IsReady())
+        if ready_status == "True":
+            print("MPO Is Ready: "+ready_status)
             self.mpo.StartTask1()#Add values to change 
+        else:
+            print("MPO Is Not Ready: "+ready_status)
         return 1
 
     # Actions when the SLD task 1 button is clicked
     def sld_t1_clicker(self):
-        if self.sld.IsReady():
-            self.sld.StartTask1()#Add values to change 
+        ready_status = str(self.sld.IsReady())
+        if ready_status == "True":
+            print("SLD Is Ready: "+ready_status)
+            self.sld.StartTask1()#Add values to change
+        else:
+            print("SLD Is Not Ready: "+ready_status)
         return 1
 
+    def start_clicker(self):
+        print("Factory Running")
+        x_value = int(self.spinBoxX.cleanText())
+        y_value = int(self.spinBoxY.cleanText())
+
+        hbw_ready_status = str(self.hbw.IsReady())
+        if hbw_ready_status == "True":
+            print("HBW Is Ready: "+hbw_ready_status)
+            self.hbw.StartTask2(x_value, y_value)
+        else:
+            print("HBW Is Not Ready: "+hbw_ready_status)
+        return 1
+'''
 #*****************************
 #*          MODBUS           *
 #*****************************
@@ -158,9 +194,15 @@ class BIT():
         self.mb.write_coil(self.addr, value)
 
     def read(self):
-        self.value = self.mb.read_coil(self.addr)
         print ("BIT Val: %r" % self.value)
-        return self.value
+        self.value = str(self.mb.read_coil(self.addr))
+        if self.value == "[True]":
+            return True
+        elif self.value == "[False]":
+            return False
+        else:
+            print("NOT a bool value")
+            return self.value
 
 #*****************************
 #*         REGISTER          *
@@ -310,7 +352,9 @@ class FACTORY():
     def __init__(self, ip, port):
         self.mb = MODBUS(ip, port)
         self.hbw = HBW(self.mb)
+        self.vgr = VGR(self.mb)
         self.mpo = MPO(self.mb)
+        self.sld = SLD(self.mb)
         self.ssc = SSC(self.mb)
     
     def status(self):
