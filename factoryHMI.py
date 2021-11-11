@@ -109,16 +109,22 @@ class UI(QMainWindow):
         return 1
 
     def start_clicker(self):
-        print("Factory Running")
+        run_flag = False
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
 
         hbw_ready_status = str(self.hbw.IsReady())
         if hbw_ready_status == "True":
             print("HBW Is Ready: "+hbw_ready_status)
-            self.hbw.StartTask2(x_value, y_value)
+            self.hbw.StartTask1(x_value, y_value)
+            run_flag = True
         else:
             print("HBW Is Not Ready: "+hbw_ready_status)
+        #run factory
+        while run_flag:
+            if str(self.hbw.IsReady()) == "True":
+                self.mpo.StartTask1()#Add values to change 
+                run_flag = False
         return 1
 
 #*****************************

@@ -152,12 +152,12 @@ class MODBUS():
 
     def read_coil(self,addr):
         self.connection_check()
-        print ("Reading")
+        #print ("Reading")
         return self.client.read_coils(addr,1)
 
     def write_coil(self,addr,value):
         self.connection_check()
-        print ("Writing")
+        #print ("Writing")
         responce = self.client.write_single_coil(addr,value)
         return responce
         
@@ -194,7 +194,7 @@ class BIT():
         self.mb.write_coil(self.addr, value)
 
     def read(self):
-        print ("BIT Val: %r" % self.value)
+        #print ("BIT Val: %r" % self.value)
         self.value = str(self.mb.read_coil(self.addr))
         if self.value == "[True]":
             return True
