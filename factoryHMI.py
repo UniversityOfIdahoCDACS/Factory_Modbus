@@ -91,11 +91,11 @@ class UI(QMainWindow):
     # Actions when the MPO task 1 button is clicked
     def mpo_t1_clicker(self):
         ready_status = str(self.mpo.IsReady())
-        if ready_status == "True":
-            print("MPO Is Ready: "+ready_status)
-            self.mpo.StartTask1()#Add values to change 
-        else:
-            print("MPO Is Not Ready: "+ready_status)
+        #if ready_status == "True":
+        print("MPO Is Ready: "+ready_status)
+        self.mpo.StartTask1()#Add values to change 
+        #else:
+            #print("MPO Is Not Ready: "+ready_status)
         return 1
 
     # Actions when the SLD task 1 button is clicked
@@ -123,6 +123,8 @@ class UI(QMainWindow):
         #run factory
         while run_flag:
             if str(self.hbw.IsReady()) == "True":
+                self.vgr.StartTask1()#Add values to change 
+                time.sleep(20)
                 self.mpo.StartTask1()#Add values to change 
                 run_flag = False
         return 1
@@ -131,6 +133,20 @@ class UI(QMainWindow):
 #*           MAIN            *
 #*****************************
 if __name__ == '__main__':
+    '''scheduler = BackgroundScheduler()
+    time_now = datetime.now() + timedelta(seconds=2)
+    scheduler.add_job(factory_master, 'date', run_date=time_now, id='factory_job')
+    scheduler.start()
+    print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
+
+    try:
+        # This is here to simulate application activity (which keeps the main thread alive).
+        while True:
+            time.sleep(1)
+    except (KeyboardInterrupt, SystemExit):
+        # Not strictly necessary if daemonic mode is enabled but should be done if possible
+        scheduler.shutdown()
+    '''
     #Initialize UI App
     app = QApplication(sys.argv)
     UIWindow = UI()
