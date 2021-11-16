@@ -292,7 +292,7 @@ class MPO():
     
     def StartTask1(self):
         self.Task1.set()
-        self.Task1.clear()
+        #self.Task1.clear()
         return 1
 
 #*****************************
