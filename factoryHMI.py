@@ -13,6 +13,7 @@ import sys
 class UI(QMainWindow):
     def __init__(self):
         super(UI, self).__init__()
+        '''
         mb = fm.MODBUS('129.101.98.246', 502)
         self.hbw = fm.HBW(mb)
         self.vgr = fm.VGR(mb)
@@ -23,7 +24,8 @@ class UI(QMainWindow):
         self.vgr.IsReady()
         self.mpo.IsReady()
         self.sld.IsReady()
-
+        '''
+        self.factory = fm.FACTORY('129.101.98.246', 502)
         #Load UI File
         uic.loadUi("FactoryUI.ui", self)
 
@@ -54,13 +56,15 @@ class UI(QMainWindow):
         #print(self.spinBoxY.cleanText())
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
-
+        self.factory.order(x_value, y_value)
+        '''
         ready_status = str(self.hbw.IsReady())
         if ready_status == "True":
             print("HBW Is Ready: "+ready_status)
             self.hbw.StartTask1(x_value, y_value)
         else:
             print("HBW Is Not Ready: "+ready_status)
+        '''
         return 1
 
     # Actions when the HBW task 2 button is clicked
@@ -69,13 +73,15 @@ class UI(QMainWindow):
         #print(self.spinBoxY.cleanText())
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
-
+        
+        '''
         ready_status = str(self.hbw.IsReady())
         if ready_status == "True":
             print("HBW Is Ready: "+ready_status)
             self.hbw.StartTask2(x_value, y_value)
         else:
             print("HBW Is Not Ready: "+ready_status)
+        '''
         return 1
 
     # Actions when the vgr task 1 button is clicked

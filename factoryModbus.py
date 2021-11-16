@@ -356,13 +356,24 @@ class FACTORY():
         self.mpo = MPO(self.mb)
         self.sld = SLD(self.mb)
         self.ssc = SSC(self.mb)
+
+        #check ready status
+        self.hbw.IsReady()
+        self.vgr.IsReady()
+        self.mpo.IsReady()
+        self.sld.IsReady()
     
     def status(self):
         return "We're working on it. Please wait"
     
-    def order(self):
-        pass
-    
+    def order(self, x_value, y_value):
+        ready_status = str(self.hbw.IsReady())
+        if ready_status == "True":
+            print("HBW Is Ready: "+ready_status)
+            self.hbw.StartTask1(x_value, y_value)
+        else:
+            print("HBW Is Not Ready: "+ready_status)
+            
     def restock(self):
         pass
 
