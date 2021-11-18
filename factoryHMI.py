@@ -13,18 +13,6 @@ import sys
 class UI(QMainWindow):
     def __init__(self):
         super(UI, self).__init__()
-        '''
-        mb = fm.MODBUS('129.101.98.246', 502)
-        self.hbw = fm.HBW(mb)
-        self.vgr = fm.VGR(mb)
-        self.mpo = fm.MPO(mb)
-        self.sld = fm.SLD(mb)
-        #check ready status
-        self.hbw.IsReady()
-        self.vgr.IsReady()
-        self.mpo.IsReady()
-        self.sld.IsReady()
-        '''
         self.factory = fm.FACTORY('129.101.98.246', 502)
         #Load UI File
         uic.loadUi("FactoryUI.ui", self)
@@ -56,15 +44,7 @@ class UI(QMainWindow):
         #print(self.spinBoxY.cleanText())
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
-        self.factory.order(x_value, y_value)
-        '''
-        ready_status = str(self.hbw.IsReady())
-        if ready_status == "True":
-            print("HBW Is Ready: "+ready_status)
-            self.hbw.StartTask1(x_value, y_value)
-        else:
-            print("HBW Is Not Ready: "+ready_status)
-        '''
+        self.factory.hbw_task1(x_value, y_value)
         return 1
 
     # Actions when the HBW task 2 button is clicked
@@ -73,38 +53,20 @@ class UI(QMainWindow):
         #print(self.spinBoxY.cleanText())
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
-        
-        '''
-        ready_status = str(self.hbw.IsReady())
-        if ready_status == "True":
-            print("HBW Is Ready: "+ready_status)
-            self.hbw.StartTask2(x_value, y_value)
-        else:
-            print("HBW Is Not Ready: "+ready_status)
-        '''
+        self.factory.hbw_task2(x_value, y_value)
         return 1
 
-    # Actions when the vgr task 1 button is clicked
+    # Actions from FACTORY class when the vgr task 1 button is clicked
     def vgr_t1_clicker(self):    
-        ready_status = str(self.vgr.IsReady())
-        if ready_status == "True":
-            print("VGR Is Ready: "+ready_status)
-            self.vgr.StartTask1()#Add values to change 
-        else:
-            print("VGR Is Not Ready: "+ready_status)
+        self.factory.vgr_task1()
         return 1
 
-    # Actions when the MPO task 1 button is clicked
+    # Actions from FACTORY class when the MPO task 1 button is clicked
     def mpo_t1_clicker(self):
-        ready_status = str(self.mpo.IsReady())
-        #if ready_status == "True":
-        print("MPO Is Ready: "+ready_status)
-        self.mpo.StartTask1()#Add values to change 
-        #else:
-            #print("MPO Is Not Ready: "+ready_status)
+        self.factory.mpo_task1()
         return 1
 
-    # Actions when the SLD task 1 button is clicked
+    # Actions from FACTORY class when the SLD task 1 button is clicked
     def sld_t1_clicker(self):
         ready_status = str(self.sld.IsReady())
         if ready_status == "True":
@@ -114,8 +76,8 @@ class UI(QMainWindow):
             print("SLD Is Not Ready: "+ready_status)
         return 1
 
+    # Actions from FACTORY class when the START button is clicked
     def start_clicker(self):
-        run_flag = False
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
 

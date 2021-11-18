@@ -14,7 +14,7 @@ c.port(SERVER_PORT)
 
 # Variables
 choice = ''
-coilNumber = 799
+coilNumber = 209
 #VGR 209
 #x MHR101
 #y MHR102
