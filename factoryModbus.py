@@ -50,12 +50,12 @@ class MODBUS():
     def read_reg(self,addr):
         self.connection_check()
         response =  self.client.read_holding_registers(addr,1)
-        print ("Modbus read_reg responce: %r" % response)
+        #print ("Modbus read_reg responce: %r" % response)
         return response
     
     def write_reg(self,addr,val):
         self.connection_check()
-        print("Modbus write reg value: %r" % val)
+        #print("Modbus write reg value: %r" % val)
         return self.client.write_single_register(addr, val)
 
 #***********************************
@@ -116,10 +116,10 @@ class REGISTER():
         self.mb.write_reg(self.addr, value)
     
     def read(self):
-        self.value = self.mb.read_reg(self.addr)
+        self.value = str(self.mb.read_reg(self.addr))
         #print ("REG Val: %r" % self.value)
         return self.value
-    
+
 #*****************************
 #*           HBW             *
 #*****************************    
@@ -127,6 +127,7 @@ class HBW():
     def __init__(self,modbus):
         self.Task1 =        BIT(101,modbus)
         self.Task2 =        BIT(102,modbus)
+        self.Task3 =        BIT(103,modbus)
         self.slot_x =       REGISTER(105,modbus)
         self.slot_y =       REGISTER(106,modbus)
         self.status_ready = BIT(130,modbus)
@@ -134,7 +135,7 @@ class HBW():
         self.fault_code   = REGISTER(181,modbus)
 
     def IsReady(self):
-        print("**************ADD READS***")
+        #print("**************ADD READS***")
         return self.status_ready.read()
     
     def StartTask1(self,x,y):
@@ -156,6 +157,14 @@ class HBW():
         self.Task2.set()
         self.Task2.clear()
         return 1
+
+    def HBW_Status(self):
+        print("Task1: "+str(self.Task1.read()))
+        print("Task2: "+str(self.Task2.read()))
+        print("Task3: "+str(self.Task3.read()))
+        print("slot_x: "+str(self.slot_x.read()))
+        print("slot_y: "+str(self.slot_y.read()))
+        print("fault_code: "+str(self.fault_code.read()))
 
 #*****************************
 #*            VGR            *
@@ -191,7 +200,11 @@ class MPO():
     
     def StartTask1(self):
         self.Task1.set()
-        #self.Task1.clear()
+        self.Task1.clear()
+        return 1
+    
+    def EndTask1(self):
+        self.Task1.clear()
         return 1
 
 #*****************************
@@ -261,9 +274,11 @@ class FACTORY():
         self.vgr.IsReady()
         self.mpo.IsReady()
         self.sld.IsReady()
+        self.hbw.HBW_Status()
     
     def status(self):
         return "We're working on it. Please wait"
+        self.hbw.HBW_Status()
     
     def order(self, x_value, y_value):
         run_flag = False
@@ -272,8 +287,20 @@ class FACTORY():
         if ready_status == "True":
             print("HBW Is Ready: "+ready_status)
             self.hbw.StartTask1(x_value, y_value)
+            run_flag = True
         else:
             print("HBW Is Not Ready: "+ready_status)
+        #run factory
+        while run_flag:
+            if str(self.hbw.IsReady()) == "True":
+                self.vgr.StartTask1()#Add values to change 
+                time.sleep(29)
+                self.hbw.StartTask2(x_value, y_value)
+                self.mpo.StartTask1()#Add values to change 
+                time.sleep(38)
+                self.sld.StartTask1()#Add values to change
+                time.sleep(4)
+                run_flag = False
             
     def hbw_task1(self, x_value, y_value):
         ready_status = str(self.hbw.IsReady())
@@ -298,6 +325,10 @@ class FACTORY():
     def mpo_task1(self):
         print("Started mpo")
         self.mpo.StartTask1()
+
+    def sld_task1(self):
+        print("Started sld")
+        self.sld.StartTask1()
 
     def restock(self):
         pass

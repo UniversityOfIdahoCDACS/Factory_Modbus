@@ -44,7 +44,8 @@ class UI(QMainWindow):
         #print(self.spinBoxY.cleanText())
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
-        self.factory.hbw_task1(x_value, y_value)
+        #self.factory.hbw_task1(x_value, y_value)
+        self.factory.status()
         return 1
 
     # Actions when the HBW task 2 button is clicked
@@ -68,34 +69,14 @@ class UI(QMainWindow):
 
     # Actions from FACTORY class when the SLD task 1 button is clicked
     def sld_t1_clicker(self):
-        ready_status = str(self.sld.IsReady())
-        if ready_status == "True":
-            print("SLD Is Ready: "+ready_status)
-            self.sld.StartTask1()#Add values to change
-        else:
-            print("SLD Is Not Ready: "+ready_status)
+        self.factory.sld_task1()
         return 1
 
     # Actions from FACTORY class when the START button is clicked
     def start_clicker(self):
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
-
-        hbw_ready_status = str(self.hbw.IsReady())
-        if hbw_ready_status == "True":
-            print("HBW Is Ready: "+hbw_ready_status)
-            self.hbw.StartTask1(x_value, y_value)
-            run_flag = True
-        else:
-            print("HBW Is Not Ready: "+hbw_ready_status)
-        #run factory
-        while run_flag:
-            if str(self.hbw.IsReady()) == "True":
-                self.vgr.StartTask1()#Add values to change 
-                time.sleep(20)
-                self.mpo.StartTask1()#Add values to change 
-                self.sld.StartTask1()#Add values to change
-                run_flag = False
+        self.factory.order(x_value, y_value)
         return 1
 
 #*****************************
