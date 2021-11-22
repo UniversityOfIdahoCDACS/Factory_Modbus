@@ -88,23 +88,22 @@ class UI(QMainWindow):
 
     # Actions from FACTORY class when the SLD task 1 button is clicked
     def hbw_status_clicker(self):
-        print("Pressed")
-        self.factory.status()
+        self.factory.hbw_status()
         return 1
 
     # Actions from FACTORY class when the SLD task 1 button is clicked
     def vgr_status_clicker(self):
-        self.factory.sld_task1()
+        self.factory.vgr_status()
         return 1
 
     # Actions from FACTORY class when the SLD task 1 button is clicked
     def mpo_status_clicker(self):
-        self.factory.sld_task1()
+        self.factory.mpo_status()
         return 1
 
     # Actions from FACTORY class when the SLD task 1 button is clicked
     def sld_status_clicker(self):
-        self.factory.sld_task1()
+        self.factory.sld_status()
         return 1
 
 #*****************************

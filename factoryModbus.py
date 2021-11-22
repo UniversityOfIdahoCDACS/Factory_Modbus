@@ -160,23 +160,30 @@ class HBW():
         return 1
 
     def HBW_Status(self):
-        print("Task1: "+str(self.Task1.read()))
-        print("Task2: "+str(self.Task2.read()))
-        print("Task3: "+str(self.Task3.read()))
-        print("slot_x: "+str(self.slot_x.read()))
-        print("slot_y: "+str(self.slot_y.read()))
-        print("status_ready: "+str(self.status_ready.read()))
-        print("cur_progress: "+str(self.cur_progress.read()))
-        print("status_fault: "+str(self.status_fault.read()))
-        print("fault_code: "+str(self.fault_code.read()))
+        print("************************")
+        print("*      HBW STATUS      *")
+        print("************************")
+        print("*Task1: "+str(self.Task1.read()))
+        print("*Task2: "+str(self.Task2.read()))
+        print("*Task3: "+str(self.Task3.read()))
+        print("*slot_x: "+str(self.slot_x.read()))
+        print("*slot_y: "+str(self.slot_y.read()))
+        print("*status_ready: "+str(self.status_ready.read()))
+        print("*cur_progress: "+str(self.cur_progress.read()))
+        print("*status_fault: "+str(self.status_fault.read()))
+        print("*fault_code: "+str(self.fault_code.read()))
+        print("************************")
 
 #*****************************
 #*            VGR            *
 #*****************************     
 class VGR():
     def __init__(self,modbus):
-        self.Task1 =        BIT(210,modbus) #210, 220, 230, 240
-        #self.Task2 =        BIT(54,modbus)
+        self.Reset =        BIT(200,modbus)
+        self.Task1 =        BIT(210,modbus)
+        self.Task2 =        BIT(220,modbus)
+        self.Task3 =        BIT(230,modbus)
+        self.Task4 =        BIT(240,modbus)
         self.status_ready = BIT(397,modbus)
         #self.status_flag1 = BIT(51,modbus)
         #self.status_flag2 = BIT(52,modbus)
@@ -190,15 +197,16 @@ class VGR():
         return 1
 
     def VGR_Status(self):
+        print("************************")
+        print("*      VGR STATUS      *")
+        print("************************")
+        print("Reset: "+str(self.Reset.read()))
         print("Task1: "+str(self.Task1.read()))
         print("Task2: "+str(self.Task2.read()))
         print("Task3: "+str(self.Task3.read()))
-        print("slot_x: "+str(self.slot_x.read()))
-        print("slot_y: "+str(self.slot_y.read()))
+        print("Task4: "+str(self.Task4.read()))
         print("status_ready: "+str(self.status_ready.read()))
-        print("cur_progress: "+str(self.cur_progress.read()))
-        print("status_fault: "+str(self.status_fault.read()))
-        print("fault_code: "+str(self.fault_code.read()))
+        print("************************")
 
 #*****************************
 #*            MPO            *
@@ -222,6 +230,18 @@ class MPO():
         self.Task1.clear()
         return 1
 
+    def MPO_Status(self):
+        print("************************")
+        print("*      MPO STATUS      *")
+        print("************************")
+        print("Reset: "+str(self.Reset.read()))
+        print("Task1: "+str(self.Task1.read()))
+        print("Task2: "+str(self.Task2.read()))
+        print("Task3: "+str(self.Task3.read()))
+        print("Task4: "+str(self.Task4.read()))
+        print("status_ready: "+str(self.status_ready.read()))
+        print("************************")
+
 #*****************************
 #*            SLD            *
 #*****************************
@@ -240,6 +260,11 @@ class SLD():
         self.Task1.set()
         self.Task1.clear()
         return 1
+
+    def SLD_Status(self):
+        print("************************")
+        print("*      SLD STATUS      *")
+        print("************************")
 
 #*****************************
 #*           SSC             *
@@ -272,6 +297,11 @@ class SSC():
         else:
             self.RLED.clear()
 
+    def SSC_Status(self):
+        print("************************")
+        print("*      SSC STATUS      *")
+        print("************************")
+
 #*****************************
 #*         FACTORY           *
 #*****************************
@@ -290,12 +320,7 @@ class FACTORY():
         self.mpo.IsReady()
         self.sld.IsReady()
         #self.hbw.HBW_Status()
-    
-    def status(self):
-        self.hbw.HBW_Status()
-        return 1
         
-    
     def order(self, x_value, y_value):
         run_flag = False
 
@@ -317,7 +342,8 @@ class FACTORY():
                 self.sld.StartTask1()#Add values to change
                 time.sleep(4)
                 run_flag = False
-            
+
+    # HBW Factory Logic 
     def hbw_task1(self, x_value, y_value):
         ready_status = str(self.hbw.IsReady())
         if ready_status == "True":
@@ -333,18 +359,37 @@ class FACTORY():
             self.hbw.StartTask2(x_value, y_value)
         else:
             print("HBW Is Not Ready: "+ready_status)
+
+    def hbw_status(self):
+        self.hbw.HBW_Status()
+        return 1
     
+    # VGR Factory Logic
     def vgr_task1(self):
         print("Started vgr")
         self.vgr.StartTask1()
 
+    def vgr_status(self):
+        self.vgr.VGR_Status()
+        return 1
+
+    # MPO Factory Logic
     def mpo_task1(self):
         print("Started mpo")
         self.mpo.StartTask1()
 
+    def mpo_status(self):
+        self.mpo.MPO_Status()
+        return 1
+
+    # SLD Factory Logic
     def sld_task1(self):
         print("Started sld")
         self.sld.StartTask1()
+
+    def sld_status(self):
+        self.sld.SLD_Status()
+        return 1
 
     def restock(self):
         pass
