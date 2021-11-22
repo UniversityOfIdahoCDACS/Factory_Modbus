@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>523</width>
-    <height>453</height>
+    <width>511</width>
+    <height>405</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,8 +44,8 @@ border-color: rgb(170, 120, 78);</string>
    <widget class="QSpinBox" name="spinBox_x">
     <property name="geometry">
      <rect>
-      <x>150</x>
-      <y>40</y>
+      <x>210</x>
+      <y>30</y>
       <width>48</width>
       <height>26</height>
      </rect>
@@ -64,8 +64,8 @@ background-color: rgb(97, 68, 45);</string>
    <widget class="QSpinBox" name="spinBox_y">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>40</y>
+      <x>280</x>
+      <y>30</y>
       <width>48</width>
       <height>26</height>
      </rect>
@@ -84,8 +84,8 @@ background-color: rgb(97, 68, 45);</string>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>20</y>
+      <x>210</x>
+      <y>10</y>
       <width>16</width>
       <height>17</height>
      </rect>
@@ -105,8 +105,8 @@ background-color: rgb(97, 68, 45);</string>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>20</y>
+      <x>280</x>
+      <y>10</y>
       <width>16</width>
       <height>17</height>
      </rect>
@@ -214,7 +214,7 @@ border-color: rgb(170, 120, 78);</string>
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>340</x>
+      <x>20</x>
       <y>130</y>
       <width>51</width>
       <height>21</height>
@@ -235,7 +235,7 @@ border-color: rgb(170, 120, 78);</string>
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>340</x>
+      <x>20</x>
       <y>180</y>
       <width>51</width>
       <height>21</height>
@@ -256,7 +256,7 @@ border-color: rgb(170, 120, 78);</string>
    <widget class="QLabel" name="label_5">
     <property name="geometry">
      <rect>
-      <x>340</x>
+      <x>20</x>
       <y>230</y>
       <width>51</width>
       <height>21</height>
@@ -277,7 +277,7 @@ border-color: rgb(170, 120, 78);</string>
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>340</x>
+      <x>20</x>
       <y>280</y>
       <width>51</width>
       <height>21</height>
@@ -298,8 +298,8 @@ border-color: rgb(170, 120, 78);</string>
    <widget class="QPushButton" name="pushButton_6">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>70</y>
+      <x>210</x>
+      <y>60</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -317,13 +317,101 @@ border-color: rgb(170, 120, 78);</string>
      <string>START</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_7">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>120</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(97, 68, 45);
+border-color: rgb(170, 120, 78);</string>
+    </property>
+    <property name="text">
+     <string>HBW STATUS</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_8">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>170</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(97, 68, 45);
+border-color: rgb(170, 120, 78);</string>
+    </property>
+    <property name="text">
+     <string>VGR STATUS</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_9">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>220</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(97, 68, 45);
+border-color: rgb(170, 120, 78);</string>
+    </property>
+    <property name="text">
+     <string>MPO STATUS</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_10">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>270</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(97, 68, 45);
+border-color: rgb(170, 120, 78);</string>
+    </property>
+    <property name="text">
+     <string>SLD STATUS</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>523</width>
+     <width>511</width>
      <height>22</height>
     </rect>
    </property>

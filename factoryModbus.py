@@ -131,6 +131,7 @@ class HBW():
         self.slot_x =       REGISTER(105,modbus)
         self.slot_y =       REGISTER(106,modbus)
         self.status_ready = BIT(130,modbus)
+        self.cur_progress = REGISTER(131,modbus)
         self.status_fault = BIT(180,modbus)
         self.fault_code   = REGISTER(181,modbus)
 
@@ -164,6 +165,9 @@ class HBW():
         print("Task3: "+str(self.Task3.read()))
         print("slot_x: "+str(self.slot_x.read()))
         print("slot_y: "+str(self.slot_y.read()))
+        print("status_ready: "+str(self.status_ready.read()))
+        print("cur_progress: "+str(self.cur_progress.read()))
+        print("status_fault: "+str(self.status_fault.read()))
         print("fault_code: "+str(self.fault_code.read()))
 
 #*****************************
@@ -184,6 +188,17 @@ class VGR():
         self.Task1.set()
         self.Task1.clear()
         return 1
+
+    def VGR_Status(self):
+        print("Task1: "+str(self.Task1.read()))
+        print("Task2: "+str(self.Task2.read()))
+        print("Task3: "+str(self.Task3.read()))
+        print("slot_x: "+str(self.slot_x.read()))
+        print("slot_y: "+str(self.slot_y.read()))
+        print("status_ready: "+str(self.status_ready.read()))
+        print("cur_progress: "+str(self.cur_progress.read()))
+        print("status_fault: "+str(self.status_fault.read()))
+        print("fault_code: "+str(self.fault_code.read()))
 
 #*****************************
 #*            MPO            *
@@ -274,11 +289,12 @@ class FACTORY():
         self.vgr.IsReady()
         self.mpo.IsReady()
         self.sld.IsReady()
-        self.hbw.HBW_Status()
+        #self.hbw.HBW_Status()
     
     def status(self):
-        return "We're working on it. Please wait"
         self.hbw.HBW_Status()
+        return 1
+        
     
     def order(self, x_value, y_value):
         run_flag = False
