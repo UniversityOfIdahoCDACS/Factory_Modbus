@@ -184,10 +184,19 @@ class VGR():
         self.Task2 =        BIT(220,modbus)
         self.Task3 =        BIT(230,modbus)
         self.Task4 =        BIT(240,modbus)
+        self.man_control  = BIT(300,modbus)
+        self.mc301 =        BIT(301,modbus)
+        self.mc302 =        BIT(302,modbus)
+        self.mc303 =        BIT(303,modbus)
+        self.mc304 =        BIT(304,modbus)
+        self.mc305 =        BIT(305,modbus)
+        self.mc306 =        BIT(306,modbus)
+        self.mc307 =        BIT(307,modbus)
+        self.mc350 =        BIT(350,modbus)
         self.status_ready = BIT(397,modbus)
-        #self.status_flag1 = BIT(51,modbus)
-        #self.status_flag2 = BIT(52,modbus)
-        
+        self.vgr_b5       = REGISTER(400,modbus)
+        self.fault_code   = REGISTER(799,modbus)
+
     def IsReady(self):
         return self.status_ready.read()
     
@@ -205,7 +214,18 @@ class VGR():
         print("Task2: "+str(self.Task2.read()))
         print("Task3: "+str(self.Task3.read()))
         print("Task4: "+str(self.Task4.read()))
+        print("man_control: "+str(self.man_control.read()))
+        print("mc301: "+str(self.mc301.read()))
+        print("mc302: "+str(self.mc302.read()))
+        print("mc303: "+str(self.mc303.read()))
+        print("mc304: "+str(self.mc304.read()))
+        print("mc305: "+str(self.mc305.read()))
+        print("mc306: "+str(self.mc306.read()))
+        print("mc307: "+str(self.mc307.read()))
+        print("mc350: "+str(self.mc350.read()))
         print("status_ready: "+str(self.status_ready.read()))
+        print("vgr_b5: "+str(self.vgr_b5.read()))
+        print("fault_code: "+str(self.fault_code.read()))
         print("************************")
 
 #*****************************
@@ -213,13 +233,28 @@ class VGR():
 #*****************************     
 class MPO():
     def __init__(self,modbus):
-        self.Task1 =        BIT(400,modbus)
-        self.status_ready = BIT(402,modbus)
-        #self.status_flag1 = BIT(51,modbus)
-        #self.status_flag2 = BIT(52,modbus)
+        self.Task1          = BIT(400,modbus) #go
+        self.status_manual  = BIT(401,modbus) #manual control mode
+        self.status_reset   = BIT(402,modbus) #reset
+        self.mc2   =        BIT(403,modbus) #compressor
+        self.mc3   =        BIT(404,modbus) #oven motor in
+        self.mc4   =        BIT(405,modbus) #oven motor out
+        self.mc5   =        BIT(406,modbus) #oven door
+        self.mc6   =        BIT(407,modbus) #vaccum
+        self.mc7   =        BIT(408,modbus) #vaccum towards the turn table
+        self.mc8   =        BIT(409,modbus) #vaccum towards the oven
+        #self.oven_ligh_status = BIT(400,modbus) #modbus input 400 0ven on light
+        #self.status_flag2 = BIT(52,modbus) #modbus input 401 saw on light
+        #self.status_ready = REGISTER(402,modbus) #modbus input 402 ready light
+                                            #modbus input 403 fault light
+                                            #modbus input 404 start light sensor
+                                            #modbus input 405 end light sensor
+        #MHR800 oven
+        #MHR801 Saw
 
     def IsReady(self):
-        return self.status_ready.read()
+        #return self.status_ready.read()
+        return True
     
     def StartTask1(self):
         self.Task1.set()
@@ -234,12 +269,17 @@ class MPO():
         print("************************")
         print("*      MPO STATUS      *")
         print("************************")
-        print("Reset: "+str(self.Reset.read()))
         print("Task1: "+str(self.Task1.read()))
-        print("Task2: "+str(self.Task2.read()))
-        print("Task3: "+str(self.Task3.read()))
-        print("Task4: "+str(self.Task4.read()))
-        print("status_ready: "+str(self.status_ready.read()))
+        print("status_manual: "+str(self.Task1.read()))
+        print("Reset BIT: "+str(self.status_reset.read()))
+        #print("Ready REGISTER: "+str(self.status_ready.read()))
+        print("MC403: "+str(self.mc2.read()))
+        print("MC404: "+str(self.mc3.read()))
+        print("MC405: "+str(self.mc4.read()))
+        print("MC406: "+str(self.mc5.read()))
+        print("MC407: "+str(self.mc6.read()))
+        print("MC408: "+str(self.mc7.read()))
+        print("MC409: "+str(self.mc8.read()))
         print("************************")
 
 #*****************************
@@ -248,10 +288,20 @@ class MPO():
 class SLD():
     def __init__(self,modbus):
         self.Task1 =        BIT(800,modbus)
+        self.mc02  =        BIT(801,modbus) 
+        self.mc03  =        BIT(802,modbus) 
+        self.mc04  =        BIT(803,modbus) 
+        self.mc05  =        BIT(804,modbus) 
+        self.mc06  =        BIT(805,modbus) 
+        self.mc07  =        BIT(806,modbus) 
+        self.mc08  =        BIT(807,modbus) 
         self.status_ready = BIT(808,modbus)
-        self.status_flag1 = BIT(809,modbus) # mc809 white, mc810 red, mc811 blue,  812, 813, 814 are faults
-        #self.status_flag2 = BIT(52,modbus) 
-
+        self.status_white = BIT(809,modbus) # mc809 white, mc810 red, mc811 blue
+        self.status_red   = BIT(810,modbus)
+        self.status_blue  = BIT(811,modbus)
+        self.fault_status_1  = BIT(812,modbus) # 812, 813, 814 are faults
+        self.fault_status_2  = BIT(813,modbus)
+        self.fault_status_3  = BIT(814,modbus)
     def IsReady(self):
         #print("HERE: ", self.status_ready.read())
         return self.status_ready.read()
@@ -264,6 +314,22 @@ class SLD():
     def SLD_Status(self):
         print("************************")
         print("*      SLD STATUS      *")
+        print("************************")
+        print("MC800:  "+str(self.Task1.read()) +"  -Task1")
+        print("MC801:  "+str(self.mc02.read()))
+        print("MC802:  "+str(self.mc03.read()))
+        print("MC803:  "+str(self.mc04.read()))
+        print("MC804:  "+str(self.mc05.read()))
+        print("MC805:  "+str(self.mc06.read()))
+        print("MC806:  "+str(self.mc07.read()))
+        print("MC807:  "+str(self.mc08.read()))
+        print("MC808:  "+str(self.status_ready.read())+"  -status_ready")
+        print("MC809:  "+str(self.status_white.read())+"  -status_white")
+        print("MC810:  "+str(self.status_red.read())+"  -status_red")
+        print("MC811:  "+str(self.status_blue.read())+"  -status_blue")
+        print("MC812:  "+str(self.fault_status_1.read())+"  -fault_status_1")
+        print("MC813:  "+str(self.fault_status_2.read())+"  -fault_status_2")
+        print("MC814:  "+str(self.fault_status_3.read())+"  -fault_status_3")
         print("************************")
 
 #*****************************
