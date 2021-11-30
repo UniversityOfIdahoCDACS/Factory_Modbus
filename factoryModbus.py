@@ -138,6 +138,9 @@ class HBW():
     def IsReady(self):
         #print("**************ADD READS***")
         return self.status_ready.read()
+
+    def CurrentProgress(self):
+        return self.cur_progress.read()
     
     def StartTask1(self,x,y):
         # wait or verify
@@ -243,7 +246,15 @@ class MPO():
         self.mc6   =        BIT(407,modbus) #vaccum
         self.mc7   =        BIT(408,modbus) #vaccum towards the turn table
         self.mc8   =        BIT(409,modbus) #vaccum towards the oven
-        #self.oven_ligh_status = BIT(400,modbus) #modbus input 400 0ven on light
+        self.mc499   =        BIT(499,modbus)
+        self.oven_ligh_status = BIT(500,modbus) #modbus input 400 0ven on light
+        self.mc501   =        BIT(501,modbus)
+        self.mc502   =        BIT(502,modbus)
+        self.mc503   =        BIT(503,modbus)
+        self.light_b   =        BIT(504,modbus)
+        self.mc505   =        BIT(505,modbus)
+        self.mc506   =        BIT(506,modbus)
+        self.mc507   =        BIT(507,modbus)
         #self.status_flag2 = BIT(52,modbus) #modbus input 401 saw on light
         #self.status_ready = REGISTER(402,modbus) #modbus input 402 ready light
                                             #modbus input 403 fault light
@@ -280,6 +291,15 @@ class MPO():
         print("MC407: "+str(self.mc6.read()))
         print("MC408: "+str(self.mc7.read()))
         print("MC409: "+str(self.mc8.read()))
+        print("MC499: "+str(self.mc499.read()))
+        print("MC500: "+str(self.oven_ligh_status.read()))
+        print("MC501: "+str(self.mc501.read()))
+        print("MC502: "+str(self.mc502.read()))
+        print("MC503: "+str(self.mc503.read()))
+        print("MC504: "+str(self.light_b.read()))
+        print("MC505: "+str(self.mc505.read()))
+        print("MC506: "+str(self.mc506.read()))
+        print("MC507: "+str(self.mc507.read()))
         print("************************")
 
 #*****************************
@@ -399,7 +419,7 @@ class FACTORY():
             print("HBW Is Not Ready: "+ready_status)
         #run factory
         while run_flag:
-            if str(self.hbw.IsReady()) == "True":
+            if str(self.hbw.CurrentProgress()) == "[80]":
                 self.vgr.StartTask1()#Add values to change 
                 time.sleep(29)
                 self.hbw.StartTask2(x_value, y_value)
