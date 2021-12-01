@@ -275,7 +275,6 @@ class MPO():
         return str(self.light_start.read())
 
     def EndSensorStatus(self):
-        print("END LIGHT: "+str(self.light_end.read()))
         return str(self.light_end.read())
 
     def MPO_Status(self):
@@ -432,7 +431,7 @@ class FACTORY():
         while stage_2_flag:
             mpo_start_light = str(self.mpo.StartSensorStatus())
             if mpo_start_light == "False":
-                time.sleep(2)
+                time.sleep(1)
                 self.mpo.StartTask1()#Add values to change 
                 stage_2_flag = False
                 stage_3_flag = True
