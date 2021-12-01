@@ -136,7 +136,7 @@ class HBW():
         self.fault_code   = REGISTER(181,modbus)
 
     def IsReady(self):
-        #print("**************ADD READS***")
+        #print("**************READY STATUS***")
         return self.status_ready.read()
 
     def CurrentProgress(self):
@@ -239,6 +239,7 @@ class MPO():
         self.Task1          = BIT(400,modbus) #go
         self.status_manual  = BIT(401,modbus) #manual control mode
         self.status_reset   = BIT(402,modbus) #reset
+        '''
         self.mc2   =        BIT(403,modbus) #compressor
         self.mc3   =        BIT(404,modbus) #oven motor in
         self.mc4   =        BIT(405,modbus) #oven motor out
@@ -246,15 +247,14 @@ class MPO():
         self.mc6   =        BIT(407,modbus) #vaccum
         self.mc7   =        BIT(408,modbus) #vaccum towards the turn table
         self.mc8   =        BIT(409,modbus) #vaccum towards the oven
-        self.mc499   =        BIT(499,modbus)
+        self.mc499 =        BIT(499,modbus)
+        '''
         self.oven_ligh_status = BIT(500,modbus) #modbus input 400 0ven on light
-        self.mc501   =        BIT(501,modbus)
-        self.mc502   =        BIT(502,modbus)
-        self.mc503   =        BIT(503,modbus)
-        self.light_b   =        BIT(504,modbus)
-        self.mc505   =        BIT(505,modbus)
-        self.mc506   =        BIT(506,modbus)
-        self.mc507   =        BIT(507,modbus)
+        self.saw_status   =        BIT(501,modbus)
+        self.ready_status =   BIT(502,modbus)
+        self.fault_status   =        BIT(503,modbus)
+        self.light_start   =      BIT(504,modbus)
+        self.light_end   =        BIT(505,modbus)
         #self.status_flag2 = BIT(52,modbus) #modbus input 401 saw on light
         #self.status_ready = REGISTER(402,modbus) #modbus input 402 ready light
                                             #modbus input 403 fault light
@@ -264,17 +264,19 @@ class MPO():
         #MHR801 Saw
 
     def IsReady(self):
-        #return self.status_ready.read()
-        return True
+        return self.ready_status.read()
     
     def StartTask1(self):
         self.Task1.set()
         self.Task1.clear()
         return 1
     
-    def EndTask1(self):
-        self.Task1.clear()
-        return 1
+    def StartSensorStatus(self):
+        return str(self.light_start.read())
+
+    def EndSensorStatus(self):
+        print("END LIGHT: "+str(self.light_end.read()))
+        return str(self.light_end.read())
 
     def MPO_Status(self):
         print("************************")
@@ -282,24 +284,13 @@ class MPO():
         print("************************")
         print("Task1: "+str(self.Task1.read()))
         print("status_manual: "+str(self.Task1.read()))
-        print("Reset BIT: "+str(self.status_reset.read()))
-        #print("Ready REGISTER: "+str(self.status_ready.read()))
-        print("MC403: "+str(self.mc2.read()))
-        print("MC404: "+str(self.mc3.read()))
-        print("MC405: "+str(self.mc4.read()))
-        print("MC406: "+str(self.mc5.read()))
-        print("MC407: "+str(self.mc6.read()))
-        print("MC408: "+str(self.mc7.read()))
-        print("MC409: "+str(self.mc8.read()))
-        print("MC499: "+str(self.mc499.read()))
-        print("MC500: "+str(self.oven_ligh_status.read()))
-        print("MC501: "+str(self.mc501.read()))
-        print("MC502: "+str(self.mc502.read()))
-        print("MC503: "+str(self.mc503.read()))
-        print("MC504: "+str(self.light_b.read()))
-        print("MC505: "+str(self.mc505.read()))
-        print("MC506: "+str(self.mc506.read()))
-        print("MC507: "+str(self.mc507.read()))
+        print("Reset status: "+str(self.status_reset.read()))
+        print("Oven Light Status: "+str(self.oven_ligh_status.read()))
+        print("Active Saw: "+str(self.saw_status.read()))
+        print("Ready: "+str(self.ready_status.read()))
+        print("Fault_Status: "+str(self.fault_status.read()))
+        print("Start Light Sensor: "+str(self.light_start.read()))
+        print("End Light Sensor: "+str(self.light_end.read()))
         print("************************")
 
 #*****************************
@@ -308,6 +299,7 @@ class MPO():
 class SLD():
     def __init__(self,modbus):
         self.Task1 =        BIT(800,modbus)
+        #801 - 897 buttons on HMI
         self.mc02  =        BIT(801,modbus) 
         self.mc03  =        BIT(802,modbus) 
         self.mc04  =        BIT(803,modbus) 
@@ -322,6 +314,7 @@ class SLD():
         self.fault_status_1  = BIT(812,modbus) # 812, 813, 814 are faults
         self.fault_status_2  = BIT(813,modbus)
         self.fault_status_3  = BIT(814,modbus)
+        #self.reset           = BIT(819,modbus)
     def IsReady(self):
         #print("HERE: ", self.status_ready.read())
         return self.status_ready.read()
@@ -350,6 +343,10 @@ class SLD():
         print("MC812:  "+str(self.fault_status_1.read())+"  -fault_status_1")
         print("MC813:  "+str(self.fault_status_2.read())+"  -fault_status_2")
         print("MC814:  "+str(self.fault_status_3.read())+"  -fault_status_3")
+        #print("MC819:  "+str(self.reset.read())+"  -reset")
+        # REGISTERS
+        # number in temp storage 1601 1602 1603
+        # dump extras number 1604
         print("************************")
 
 #*****************************
@@ -404,30 +401,48 @@ class FACTORY():
         self.hbw.IsReady()
         self.vgr.IsReady()
         self.mpo.IsReady()
+        self.mpo.StartSensorStatus()
         self.sld.IsReady()
         #self.hbw.HBW_Status()
         
     def order(self, x_value, y_value):
-        run_flag = False
+        stage_1_flag = False #HBW -> VGR -> MPO also HBW return pallet
+        stage_2_flag = False #
+        stage_3_flag = False
 
-        ready_status = str(self.hbw.IsReady())
-        if ready_status == "True":
-            print("HBW Is Ready: "+ready_status)
-            self.hbw.StartTask1(x_value, y_value)
-            run_flag = True
+        hbw_ready_status = str(self.hbw.IsReady())
+        # Run HBW
+        if hbw_ready_status == "True":
+            print("HBW Is Ready: "+hbw_ready_status)
+            self.hbw.StartTask1(x_value, y_value) #HBW STARTS
+            stage_1_flag = True
         else:
-            print("HBW Is Not Ready: "+ready_status)
-        #run factory
-        while run_flag:
+            print("HBW Is Not Ready: "+hbw_ready_status)
+        # Run VGR and HBW return
+        while stage_1_flag:
+            hbw_ready_status = str(self.hbw.IsReady())
             if str(self.hbw.CurrentProgress()) == "[80]":
-                self.vgr.StartTask1()#Add values to change 
-                time.sleep(29)
-                self.hbw.StartTask2(x_value, y_value)
+                self.vgr.StartTask1() #VGR STARTS
+            elif hbw_ready_status == "True":
+                time.sleep(2)
+                self.hbw.StartTask2(x_value, y_value)#Return Pallet
+                stage_1_flag = False
+                stage_2_flag = True
+
+        while stage_2_flag:
+            mpo_start_light = str(self.mpo.StartSensorStatus())
+            if mpo_start_light == "False":
+                time.sleep(2)
                 self.mpo.StartTask1()#Add values to change 
-                time.sleep(38)
-                self.sld.StartTask1()#Add values to change
-                time.sleep(4)
-                run_flag = False
+                stage_2_flag = False
+                stage_3_flag = True
+
+        while stage_3_flag:
+            mpo_end_light = str(self.mpo.EndSensorStatus())
+            #print("stage 3 end light: "+mpo_end_light)
+            if mpo_end_light == "False":
+                self.sld.StartTask1()
+                stage_3_flag = False
 
     # HBW Factory Logic 
     def hbw_task1(self, x_value, y_value):
