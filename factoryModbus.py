@@ -143,20 +143,16 @@ class HBW():
         return self.cur_progress.read()
     
     def StartTask1(self,x,y):
-        # wait or verify
         self.slot_x.write(x)
         self.slot_y.write(y)
-        # wait or verify
         #Set task one and clear it (simuler to pressing HMI button)
         self.Task1.set()
         self.Task1.clear()
         return 1
 
     def StartTask2(self,x,y):
-        # wait or verify
         self.slot_x.write(x)
         self.slot_y.write(y)
-        # wait or verify
         #Set task two and clear it (simuler to pressing HMI button)
         self.Task2.set()
         self.Task2.clear()
@@ -502,28 +498,15 @@ class FACTORY():
 #factory.order()
 #factory.status()
 #factory.restock()
-'''
-# Quick test object to validate modbus communications
-c = MODBUS("129.101.98.246", 502)
-b = BIT(101, c)
-v = REGISTER(101,c)
-
-b.set()
-b.read()
-b.clear()
-print(b.read())
-
-v.write(5)
-v.read()
-v.write(2)
-print(v.read())
-'''
 
 #*****************************
 #*           MAIN            *
 #*****************************
 if __name__ == '__main__':
-    #Initialize UI App
-    app = QApplication(sys.argv)
-    UIWindow = UI()
-    app.exec_()
+    #Main is not used
+    print("****************************")
+    print("* start factory with       *")
+    print("* $python3 factoryHMI.py   *")
+    print("*            or            *")
+    print("* $python3 factoryMQTT.py  *")
+    print("****************************")
