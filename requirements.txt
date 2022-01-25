@@ -1,0 +1,4 @@
+pyModbusTCP
+PyQt5
+paho-mqtt
+python-dotenv
