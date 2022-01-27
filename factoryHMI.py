@@ -1,11 +1,36 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QPushButton, QSpinBox
 from apscheduler.schedulers.background import BackgroundScheduler
 from pyModbusTCP.client import ModbusClient
+from dotenv import dotenv_values
 import factoryModbus as fm
 from PyQt5 import uic
 import FactoryUI
 import time
-import sys
+import os, sys
+import logging
+
+
+
+#*********************************************
+#* * * * * * * * * Load .env * * * * * * * * *
+#*********************************************
+# Find script directory
+envLoc = os.path.dirname(os.path.realpath(__file__)) + "/.env"
+# Test if exist then import .env
+if not os.path.exists(envLoc):
+    logging.error(".env file not found")
+    logging.debug("envLoc value: %r" % envLoc)
+    sys.exit(1)
+try:
+    config = dotenv_values(envLoc) # loads .env file in current directoy
+except:
+    logging.error("Error loading .env file")
+    sys.exit(1)
+
+# Environment debug
+for item in config:
+    logging.debug(item, config[item], type(config[item]))
+
 
 #*****************************
 #*            UI             *
@@ -13,7 +38,7 @@ import sys
 class UI(QMainWindow):
     def __init__(self):
         super(UI, self).__init__()
-        self.factory = fm.FACTORY('129.101.98.246', 502)
+        self.factory = fm.FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
         #Load UI File
         uic.loadUi("FactoryUI.ui", self)
 

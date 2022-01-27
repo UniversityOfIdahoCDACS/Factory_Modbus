@@ -493,7 +493,7 @@ class FACTORY():
 #*****************************
 #*          TESTS            *
 #*****************************
-#factory = FACTORY(ip="192.101.98.246",port=502)
+#factory = FACTORY(ip="0.0.0.0",port=502)
 
 #factory.order()
 #factory.status()
