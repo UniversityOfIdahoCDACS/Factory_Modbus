@@ -5,7 +5,8 @@ import time,logging,sys
 import json
 import os
 import socket    # Used for exception handling
-from dotenv import load_dotenv
+from dotenv import dotenv_values
+import ssl
 
 
 #*********************************************
@@ -41,6 +42,12 @@ def handshake(client, hand_shake):
 #*********************************************
 def on_message(client, userdata, message):
     print("GOT THE MESSAGE!")
+    print("Received message: '" + str(message.payload) + "' on topic: '"
+        + message.topic + "' with QoS: " + str(message.qos))
+    data = json.loads(message.payload)
+    for item in data:
+        print(">", data[item])
+
     factory = fm.FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
     x_value = 2
     y_value = 3
@@ -55,10 +62,13 @@ got_Once = True
 if __name__ == '__main__':
      ### MQTT Set up ###
     print("CREATING CLIENT")
-    client = mqtt.Client(config['MQTT_CLIENT_ID'])
+    client = mqtt.Client(config['MQTT_CLIENT_ID'], transport="websockets")
+    client.ws_set_options(path="/ws", headers=None)
+    client.tls_set(ca_certs=None, certfile=None, keyfile=None, cert_reqs=ssl.CERT_REQUIRED,
+             tls_version=ssl.PROTOCOL_TLS, ciphers=None)
 
     try:
-        client.connect(config['MQTT_BROKER_URL'], keepalive=60)
+        client.connect(config['MQTT_BROKER_URL'], port=int(config['MQTT_PORT']), keepalive=60)
     except socket.timeout:
         print("MQTT connection attempt timed out")
         sys.exit(1)
@@ -69,5 +79,9 @@ if __name__ == '__main__':
 
     client.loop_start()
     client.subscribe(config['MQTT_SUBSCRIBE'])
+
+    #client.on_message = on_message
+    #client.loop_forever(timeout=1.0, max_packets=1, retry_first_connection=True)
+    print("Post client loop")
     while got_Once:
         client.on_message = on_message
