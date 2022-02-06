@@ -1,8 +1,10 @@
 
 import paho.mqtt.client as mqtt
 from dotenv import dotenv_values
-import time,logging,sys
+import logging
+import time
 import json
+import sys
 import os
 import socket       # Used for exception handling
 import ssl          # Used for MQTT TLS connection
@@ -11,7 +13,7 @@ import ssl          # Used for MQTT TLS connection
 #* * * * * * * * * Logger Setup * * * * * * * *
 #*********************************************
 FORMAT = '[%(asctime)s] [%(levelname)-5s] [%(name)s] [%(threadName)s] - %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.DEBUG, filename='factoryMQTT.log')
+logging.basicConfig(format=FORMAT, level=logging.DEBUG) #, filename='factoryMQTT.log')
 
 #*********************************************
 #* * * * * * * * * Load .env * * * * * * * * *
@@ -33,8 +35,7 @@ except:
 for item in config:
     logging.debug("Item: {}\tValue: {}".format(item, config[item]))
 
-
-class FACTORY_MQTT():
+class FACTORY_MQTT(mqtt.Client):
     # Doc: https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
 
     def __init__(self, URL=None, PORT=None, CLIENT_ID="Unknown Client", TOPIC_SUB=None, TOPIC_PUB=None):
@@ -54,12 +55,11 @@ class FACTORY_MQTT():
         self.client.ws_set_options(path="/ws", headers=None)
         self.client.tls_set(ca_certs=None, certfile=None, keyfile=None, cert_reqs=ssl.CERT_REQUIRED,
              tls_version=ssl.PROTOCOL_TLS, ciphers=None)
-        #self.client.enable_logger(logger=self.logger)   # paho will use CLASS's logger & settings
-        self.client.enable_logger()                      # paho loger will be paho.mqtt.client
+        self.client.message_callback_add(self.topic_sub, self.on_message)  # Link callback
+        #self.client.enable_logger(logger=self.logger)  # paho will use CLASS's logger & settings
+        self.client.enable_logger()                     # paho loger will be paho.mqtt.client
 
-    def test(self):
-        self.logger.info("Hello from class")
-    
+
     def connect(self):
         try:
             self.client.connect(self.mqtt_url, port=self.mqtt_port, keepalive=60)
@@ -71,6 +71,7 @@ class FACTORY_MQTT():
             self.logger.error("An exception of type {0} occurred. Arguments:\n{1!r}".format(type(e).__name__, e.args))
             sys.exit(1)
     
+
     # Called when the broker responds to our connection request
     # client.connect callback
     def on_connect(client, userdata, flags, rc):
@@ -80,7 +81,7 @@ class FACTORY_MQTT():
             print("Bad connection Returned code=",rc)
         
     
-    def message_callback(self, userdata, message):
+    def message_callback(self,  userdata, message):
         self.logger.debug("MQTT userdata: {}\tMsg: {}".format(userdata, message))
 
 
@@ -97,11 +98,11 @@ class FACTORY_MQTT():
 
     # connect if needed and start subscription with broker
     def start(self):
-        self.logger.debug("Subscribing to {}".format(self.topic_sub))
-        self.client.subscribe(self.topic_sub)
-
         self.logger.info("Starting MQTT loop")
         self.client.loop_start()
+
+        self.logger.debug("Subscribing to {}".format(self.topic_sub))
+        self.client.subscribe(self.topic_sub)
 
         # Send online message
         self.publish(self.topic_pub, payload="%s initialized".format(self.client_id))
@@ -117,6 +118,7 @@ class FACTORY_MQTT():
     # Health check and any periodic jobs
     def update(self):
         self.logger.debug("MQTT update")
+        self.logger.debug(">MQTT State: {}".format(self.client._state))
         # check connection?
     
     # TODO
@@ -131,8 +133,29 @@ class FACTORY_MQTT():
         else:
             self.logger.warning("Bad connection Returned code=",rc)
 
-    def on_message(self, userdata, message):
-        pass
+
+    def on_message(self, client, userdata, message):
+        # We don't care about client. Returned client object
+        # We don't care about userdata. Empty
+
+        self.logger.info("Message received! \tMsg: {}".format(message.payload))
+        
+        self.logger.debug(">> Client id: {}".format(client._client_id))
+        self.logger.debug(">> Message topic: {}".format(message.topic))
+        self.logger.debug(">> Message payload: {}".format(message.payload))
+        self.logger.debug(">> Message info: {}".format(message.info))
+        self.logger.debug(">> Message timestamp: {}".format(message.timestamp))
+
+        self.logger.debug("> Parsing message")
+        mypayload = json.loads(message.payload.decode("utf-8"))
+        for item in mypayload:
+            self.logger.debug(">> Payload item {}\t value: {}".format(item, mypayload[item]))
+
+        self.logger.debug("Echoing message back to server")
+        echo_msg = "Factory recieved message type {}".format(mypayload['msg_type'])
+        self.publish(self.topic_pub, payload=echo_msg)
+
+
 
     def on_disconnect(self):
         pass
@@ -140,17 +163,19 @@ class FACTORY_MQTT():
 
 
 if __name__ == '__main__':
+    logging.info("Starting factory MQTT")
     m = FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
             TOPIC_SUB=config['MQTT_SUBSCRIBE'], TOPIC_PUB=config['MQTT_PUBLISH'])
 
-    m.test()
     m.connect()
 
     time.sleep(2)
     m.start()
     
+    
+    logging.debug("Going into main loop")
     while True:
-        time.sleep(10)
+        time.sleep(7)
         m.update()
 
     m.stop()
@@ -177,35 +202,13 @@ os.exit()
 def handshake(client, hand_shake):
     client.publish(config['MQTT_PUBLISH'], payload=json.dumps(hand_shake))
 
-#*********************************************
-#* * * * * * * * ON MESSAGE * * * * * * * * *
-#*********************************************
-def on_message(client, userdata, message):
-    logging.debug("GOT THE MESSAGE!")
-    logging.debug("Received message: '" + str(message.payload) + "' on topic: '"
-        + message.topic + "' with QoS: " + str(message.qos))
-    data = json.loads(message.payload)
-    for item in data:
-        logging.debug(">Key: {}\tValue: {}".format(item, data[item]))
 
-   # Factory stuff here
-
-    got_Once = False
-
-
-got_Once = True
 #*****************************
 #*           MAIN            *
 #*****************************
 if __name__ == '__main__':
      ### MQTT Set up ###
     logging.info("CREATING CLIENT")
-    client = mqtt.Client(config['MQTT_CLIENT_ID'], transport="websockets")
-    client.ws_set_options(path="/ws", headers=None)
-    client.tls_set(ca_certs=None, certfile=None, keyfile=None, cert_reqs=ssl.CERT_REQUIRED,
-             tls_version=ssl.PROTOCOL_TLS, ciphers=None)
-
-    client.connect(config['MQTT_BROKER_URL'], port=int(config['MQTT_PORT']), keepalive=60)
 
     client.loop_start()
     client.subscribe(config['MQTT_SUBSCRIBE'])
@@ -213,8 +216,5 @@ if __name__ == '__main__':
     #client.on_message = on_message
     #client.loop_forever(timeout=1.0, max_packets=1, retry_first_connection=True)
     logging.info("Post client loop")
-    while got_Once:
-        client.on_message = on_message
-
 
 
