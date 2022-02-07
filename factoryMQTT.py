@@ -18,22 +18,25 @@ logging.basicConfig(format=FORMAT, level=logging.DEBUG) #, filename='factoryMQTT
 #*********************************************
 #* * * * * * * * * Load .env * * * * * * * * *
 #*********************************************
-# Find script directory
-envLoc = os.path.dirname(os.path.realpath(__file__)) + "/.env"
-# Test if exist then import .env
-if not os.path.exists(envLoc):
-    logging.error(".env file not found")
-    logging.debug("envLoc value: %r" % envLoc)
-    sys.exit(1)
-try:
-    config = dotenv_values(envLoc) # loads .env file in current directoy
-except:
-    logging.error("Error loading .env file")
-    sys.exit(1)
+def load_env():
+    # Find script directory
+    envLoc = os.path.dirname(os.path.realpath(__file__)) + "/.env"
+    # Test if exist then import .env
+    if not os.path.exists(envLoc):
+        logging.error(".env file not found")
+        logging.debug("envLoc value: %r" % envLoc)
+        sys.exit(1)
+    try:
+        config = dotenv_values(envLoc) # loads .env file in current directoy
+    except:
+        logging.error("Error loading .env file")
+        sys.exit(1)
 
-# Environment debug
-for item in config:
-    logging.debug("Item: {}\tValue: {}".format(item, config[item]))
+    # Environment debug
+    for item in config:
+        logging.debug("Item: {}\tValue: {}".format(item, config[item]))
+
+    return config
 
 class FACTORY_MQTT(mqtt.Client):
     # Doc: https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
@@ -81,10 +84,6 @@ class FACTORY_MQTT(mqtt.Client):
             print("Bad connection Returned code=",rc)
         
     
-    def message_callback(self,  userdata, message):
-        self.logger.debug("MQTT userdata: {}\tMsg: {}".format(userdata, message))
-
-
     # Publish to broker
     def publish(self, topic, payload=None, qos=0, retain=False):
         self.logger.info("Sending topic {} this payload: {}".format(topic, payload))
@@ -113,7 +112,7 @@ class FACTORY_MQTT(mqtt.Client):
         self.logger.info("Stopping MQTT loop")
         self.client.loop_stop()
         self.client.disconnect()
-    
+    s
 
     # Health check and any periodic jobs
     def update(self):
@@ -164,6 +163,8 @@ class FACTORY_MQTT(mqtt.Client):
 
 if __name__ == '__main__':
     logging.info("Starting factory MQTT")
+    config = load_env()
+
     m = FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
             TOPIC_SUB=config['MQTT_SUBSCRIBE'], TOPIC_PUB=config['MQTT_PUBLISH'])
 
@@ -180,41 +181,3 @@ if __name__ == '__main__':
 
     m.stop()
     exit()
-
-
-
-
-
-
-
-#******************************************************************************************
-#******************************************************************************************
-#* Code graveyard
-#******************************************************************************************
-#******************************************************************************************
-os.exit()
-
-
-
-#*********************************************
-#* * * * * * * * * HANDSHAKE * * * * * * * * *
-#*********************************************
-def handshake(client, hand_shake):
-    client.publish(config['MQTT_PUBLISH'], payload=json.dumps(hand_shake))
-
-
-#*****************************
-#*           MAIN            *
-#*****************************
-if __name__ == '__main__':
-     ### MQTT Set up ###
-    logging.info("CREATING CLIENT")
-
-    client.loop_start()
-    client.subscribe(config['MQTT_SUBSCRIBE'])
-
-    #client.on_message = on_message
-    #client.loop_forever(timeout=1.0, max_packets=1, retry_first_connection=True)
-    logging.info("Post client loop")
-
-
