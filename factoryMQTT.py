@@ -112,7 +112,7 @@ class FACTORY_MQTT(mqtt.Client):
         self.logger.info("Stopping MQTT loop")
         self.client.loop_stop()
         self.client.disconnect()
-    s
+
 
     # Health check and any periodic jobs
     def update(self):

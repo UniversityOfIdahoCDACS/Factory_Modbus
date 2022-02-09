@@ -1,4 +1,5 @@
 
+from distutils.log import error
 from dotenv import dotenv_values
 import logging
 import time
@@ -17,6 +18,7 @@ import factoryMQTT
 #*********************************************
 FORMAT = '[%(asctime)s] [%(levelname)-5s] [%(name)s] [%(threadName)s] - %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.DEBUG) #, filename='factoryMQTT.log')
+
 
 #*********************************************
 #* * * * * * * * * Load .env * * * * * * * * *
@@ -43,23 +45,81 @@ def load_env():
     return config
 
 
+class ORCHASTRATOR():
+    def __init__(self, mqtt=None, queue=None):
+        self.mqtt = mqtt  # mqtt is optional
+        if queue is None:
+            raise Exception("queue not specified")
+        else:
+            self.queue=queue
 
-if __name__ == '__main__':
+    def add_job_callback(self, job_data):
+        # Verify
+        if not ('job_id' and 'order_id' and 'color' and 'cook_time' and 'slice' in job_data):
+            print("Bad job_data")
+            self.send_job_notice("Error: Invalid new_job data: %r" % job_data)
+            raise Exception ("Bad job_data")
+        
+        # Add to queue
+        self.queue.add_job(job_data)
+
+        self.send_job_notice("Added job %d for order %d | color: %s,  cook time: %d, sliced: %b"% (job_data['job_id'], job_data['order_id'], job_data['color'], job_data['cook_time'], job_data['slice']))
+        pass
+
+
+    def cancel_job_id_callback(self, job_id):
+        self.send_job_notice("Canceled job")
+        pass
+
+
+    def cancel_job_order_callback(self, order_id):
+        self.send_job_notice("Canceled order")
+        pass
+
+
+    def send_inventory(self):
+        # Get inventory
+        pass
+
+
+    def send_status(self):
+        pass
+
+
+    def send_job_notice(self, msg):
+        if self.mqtt is not None:
+            pass
+        return
+
+
+    def factory_update(self):
+        pass
+
+
+def main():
     logging.info("Starting factory python controller")
 
     config = load_env()
 
     logging.info("Starting factory MQTT")
-    m = factoryMQTT.FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
+    mqtt = factoryMQTT.FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
             TOPIC_SUB=config['MQTT_SUBSCRIBE'], TOPIC_PUB=config['MQTT_PUBLISH'])
-
-    m.connect()
-
-    time.sleep(2)
-    m.start()
+    mqtt.connect()
+    time.sleep(1)
+    # mqtt.start()
     
+    logging.info("hello")
+    logging.debug("Creating Job and orchastrator")
+    job_queue = jobQueue.JOB_QUEUE()
+    orchastrator = ORCHASTRATOR(mqtt=mqtt, queue=job_queue)
+
+
     
     logging.debug("Going into main loop")
     while True:
         time.sleep(7)
-        m.update()
+        mqtt.update()
+
+
+if __name__ == '__main__':
+    main()
