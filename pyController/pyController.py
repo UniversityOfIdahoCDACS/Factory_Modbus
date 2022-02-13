@@ -10,7 +10,7 @@ import os
 
 # factory modules import
 #import factoryModbus
-import jobQueue
+import factoryJobQueue
 import factory_inventory
 import factoryMQTT
 
@@ -177,7 +177,7 @@ def main():
     
     logging.info("hello")
     logging.debug("Creating Job and orchastrator")
-    job_queue = jobQueue.JOB_QUEUE()
+    job_queue = factoryJobQueue.JOB_QUEUE()
     inventory = factory_inventory.FACTORY_INVENTORY()
     inventory.preset_inventory()
     orchastrator = ORCHASTRATOR(mqtt=mqtt, queue=job_queue, inventory=inventory)
