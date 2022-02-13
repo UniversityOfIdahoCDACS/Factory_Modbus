@@ -12,8 +12,8 @@ import ssl          # Used for MQTT TLS connection
 #*********************************************
 #* * * * * * * * * Logger Setup * * * * * * * *
 #*********************************************
-FORMAT = '[%(asctime)s] [%(levelname)-5s] [%(name)s] [%(threadName)s] - %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.DEBUG) #, filename='factoryMQTT.log')
+# Created in Class
+
 
 #*********************************************
 #* * * * * * * * * Load .env * * * * * * * * *
@@ -44,6 +44,7 @@ class FACTORY_MQTT(mqtt.Client):
     def __init__(self, URL=None, PORT=None, CLIENT_ID="Unknown Client", TOPIC_SUB=None, TOPIC_PUB=None):
         # Logger
         self.logger = logging.getLogger('FACTORY_MQTT')
+        self.logger.setLevel(logging.DEBUG)
         self.logger.debug("Initializing MQTT Client")
 
         # MQTT variables
@@ -51,7 +52,7 @@ class FACTORY_MQTT(mqtt.Client):
         self.mqtt_port = PORT
         self.client_id = CLIENT_ID  # This client identifier
         self.topic_sub = TOPIC_SUB  # Primary subscriber topic
-        self.topic_pub = TOPIC_PUB  # Primary publisher topic
+        #self.topic_pub = TOPIC_PUB  # Primary publisher topic
 
         # MQTT Client config
         self.client = mqtt.Client(self.client_id, transport="websockets")
@@ -104,7 +105,7 @@ class FACTORY_MQTT(mqtt.Client):
         self.client.subscribe(self.topic_sub)
 
         # Send online message
-        self.publish(self.topic_pub, payload="%s initialized".format(self.client_id))
+        self.publish("Factory/Echo", payload="%s initialized".format(self.client_id))
     
 
     # Stop and disconnect from broker
@@ -152,7 +153,7 @@ class FACTORY_MQTT(mqtt.Client):
 
         self.logger.debug("Echoing message back to server")
         echo_msg = "Factory recieved message type {}".format(mypayload['msg_type'])
-        self.publish(self.topic_pub, payload=echo_msg)
+        self.publish('Factory/Echo', payload=echo_msg)
 
 
 
@@ -162,7 +163,11 @@ class FACTORY_MQTT(mqtt.Client):
 
 
 if __name__ == '__main__':
-    logging.info("Starting factory MQTT")
+    # Create logger
+    logger = logging.getLogger("factoryMQTT_test")
+    logger.setLevel(logging.DEBUG) # sets default logging level for all modules
+
+    logger.info("Starting factory MQTT")
     config = load_env()
 
     m = FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
@@ -174,7 +179,7 @@ if __name__ == '__main__':
     m.start()
     
     
-    logging.debug("Going into main loop")
+    logger.debug("Going into main loop")
     while True:
         time.sleep(7)
         m.update()
