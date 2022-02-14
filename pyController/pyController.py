@@ -151,6 +151,7 @@ class ORCHASTRATOR():
             status['current_job'] = 'None'
             status['job_queue_len'] = str(self.queue.has_jobs())
             self.mqtt.publish("Factory/Status", payload=json.dumps(status), qos=0)
+        return
 
 
     def send_job_notice(self, msg):
@@ -161,6 +162,28 @@ class ORCHASTRATOR():
 
     def factory_update(self):
         pass
+
+    def factory_start_job(self):
+        if self.queue.has_jobs:
+            # Pop next job
+            job_data = self.queue.next_available_job()
+            logging.debug("Starting job with data: {}".format(job_data))
+
+
+            if job_data is False: # No job ready
+                logging.debug("No jobs ready with available inventory")
+            
+            # Parse job
+            slot = job_data[1]
+            job_color = job_data[0]['color']
+            cook_time = job_data[0]['cook_time']
+            slice = job_data[0]['color']
+
+            # Send to factory
+        
+        return
+
+
 
 
 def main():
@@ -185,7 +208,7 @@ def main():
     
     logging.debug("Going into main loop")
     while True:
-        time.sleep(7)
+        time.sleep(45)
         mqtt.update()
         orchastrator.send_inventory()
         orchastrator.send_status()

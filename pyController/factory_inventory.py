@@ -12,7 +12,6 @@ class FACTORY_INVENTORY():
 
     def __init__(self):
         self.inventory = []
-        self.preset_inventory()
         logger.debug("Factory Inventory Initialized")
 
     # Presets inventory to a known configuration

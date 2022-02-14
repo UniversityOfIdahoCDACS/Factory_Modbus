@@ -1,17 +1,15 @@
 
+# Depends on factory_inventory
 
 import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG) # sets default logging level for all modules
 
-logger.info("job queue imported")
-logger.debug("job queue imported - debug")
-
-
 class JOB_QUEUE():
     def __init__(self):
         self.data = []
+        logger.debug("Job Queue initialized")
 
 
     def add_job(self, order_data):
@@ -77,4 +75,30 @@ class JOB_QUEUE():
         
         return self.data.pop()
 
+    # pop next job with available inventory
+    def next_available_job(self, inventory):
+        '''
+        Look at first job
+        Get it's color
+        Try to pop an inventory slot with color
+            if yes, pop job
+            if no, pass to next job
+        '''
+        for job in enumerate(self.data):
+            logger.debug("Looking at possible next job {}".format(job))
+            job_color = job[1]['color']
+            logger.debug("> job color: {}".format(job_color))
+
+            # Check inventory for color
+            slot = inventory.pop_color(job_color)
+            if slot is False: # no color found in inventory
+                continue # look at next job
+            else:
+                logger.info("Found available job {} for color {} in slot {}".format(job[1], job_color, slot))
+                del self.data[job[0]]   # Delete job in queue
+                return (job[1], slot)           # Pass back job data
+
+        logger.info("Could not find a job with available inventory")
+        return False
+        
 

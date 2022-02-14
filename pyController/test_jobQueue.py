@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     order = {'job_id': 123, 'order_id': 1, 'color': 'red', 'cook_time': 12, 'slice': True}
     q.add_job(order)
-    order = {'job_id': 124, 'order_id': 1, 'color': 'white', 'cook_time': 13, 'slice': False}
+    order = {'job_id': 124, 'order_id': 1, 'color': 'red', 'cook_time': 13, 'slice': False}
     q.add_job(order)
     order = {'job_id': 125, 'order_id': 2, 'color': 'red', 'cook_time': 14, 'slice': True}
     q.add_job(order)
@@ -50,6 +50,22 @@ if __name__ == '__main__':
     logger.info(q.has_jobs())
 
     logger.info(q.next_job())
+
+    logger.info("Testing find next available job\n")
+    import factory_inventory
+    logging.getLogger("Factory_Inventory").setLevel(logging.INFO)
+    
+    inv = factory_inventory.FACTORY_INVENTORY()
+    inv.preset_inventory()
+
+    job = q.next_available_job(inv)
+    logger.info("Job return: {}".format(job))
+
+    job = q.next_available_job(inv)
+    logger.info("Job return: {}".format(job))
+
+    job = q.next_available_job(inv)
+    logger.info("Job return: {}".format(job))
     logger.info("End program")
 
     sys.exit(0)
