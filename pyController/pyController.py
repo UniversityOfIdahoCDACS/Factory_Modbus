@@ -95,6 +95,7 @@ class ORCHASTRATOR():
         self.queue.add_job(job_data)
         log_msg = "Added job {} for order {} | color: {},  cook time: {}, sliced: {}".format(job_data['job_id'], job_data['order_id'], job_data['color'], job_data['cook_time'], job_data['slice'])
         self.send_job_notice(log_msg)
+        logging.info(log_msg)
 
 
     def cancel_job_id_callback(self, job_id):
@@ -205,10 +206,15 @@ def main():
     inventory.preset_inventory()
     orchastrator = ORCHASTRATOR(mqtt=mqtt, queue=job_queue, inventory=inventory)
 
+    # set mqtt callbacks
+    mqtt.set_add_job_callback(orchastrator.add_job_callback)
+    mqtt.set_cancel_job_callback(orchastrator.cancel_job_id_callback)
+    mqtt.set_cancel_order_callback(orchastrator.cancel_job_order_callback)
+
     
     logging.debug("Going into main loop")
     while True:
-        time.sleep(45)
+        time.sleep(30)
         mqtt.update()
         orchastrator.send_inventory()
         orchastrator.send_status()
