@@ -63,6 +63,11 @@ class FACTORY_MQTT(mqtt.Client):
         #self.client.enable_logger(logger=self.logger)  # paho will use CLASS's logger & settings
         self.client.enable_logger()                     # paho loger will be paho.mqtt.client
 
+        # Callbacks
+        self.add_job_callback = None
+        self.cancel_job_callback = None
+        self.cancel_order_callback = None
+
 
     def connect(self):
         try:
@@ -105,7 +110,7 @@ class FACTORY_MQTT(mqtt.Client):
         self.client.subscribe(self.topic_sub)
 
         # Send online message
-        self.publish("Factory/Echo", payload="%s initialized".format(self.client_id))
+        self.publish("Factory/Echo", payload="{} initialized".format(self.client_id))
     
 
     # Stop and disconnect from broker
@@ -140,21 +145,43 @@ class FACTORY_MQTT(mqtt.Client):
 
         self.logger.info("Message received! \tMsg: {}".format(message.payload))
         
-        self.logger.debug(">> Client id: {}".format(client._client_id))
         self.logger.debug(">> Message topic: {}".format(message.topic))
         self.logger.debug(">> Message payload: {}".format(message.payload))
-        self.logger.debug(">> Message info: {}".format(message.info))
         self.logger.debug(">> Message timestamp: {}".format(message.timestamp))
 
-        self.logger.debug("> Parsing message")
+        
         mypayload = json.loads(message.payload.decode("utf-8"))
         for item in mypayload:
             self.logger.debug(">> Payload item {}\t value: {}".format(item, mypayload[item]))
 
-        self.logger.debug("Echoing message back to server")
         echo_msg = "Factory recieved message type {}".format(mypayload['msg_type'])
         self.publish('Factory/Echo', payload=echo_msg)
+        
+        self.logger.debug("> Parsing message")
+        if 'msg_type' in mypayload:
+            if mypayload['msg_type'] == 'new_job':
+                job_payload = mypayload['payload']
+                self.logger.info("Recieved new job")
+                if self.add_job_callback is not None:
+                    self.add_job_callback(job_payload)
+            
+            elif mypayload['msg_type'] == 'cancel_job_id':
+                pass
+            elif mypayload['msg_type'] == 'cancel_order_id':
+                pass
+            else:
+                self.mqtt.publish("Factory/Job_notice", "Invalid message type {}".format(mypayload['msg_type']))
+                self.logger.error("Message received with invalid message type {}".format(mypayload['msg_type']))
+        
 
+    def set_add_job_callback(self, foo):
+        self.add_job_callback = foo
+    
+    def set_cancel_job_callback(self, foo):
+        self.cancel_job_callback = foo
+
+    def set_cancel_order_callback(self, foo):
+        self.cancel_order_callback = foo
 
 
     def on_disconnect(self):
