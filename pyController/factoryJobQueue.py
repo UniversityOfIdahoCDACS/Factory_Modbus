@@ -1,24 +1,36 @@
 
-# Depends on factory_inventory
+"""
+Factory Job Queue class
+Depends on factory_inventory
+"""
 
 import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG) # sets default logging level for all modules
 
-class JOB_QUEUE():
+class JobQueue():
+    """
+    Factory Job Queue class
+    Depends on factory_inventory
+    """
     def __init__(self):
+        """Initialize"""
         self.data = []
         logger.debug("Job Queue initialized")
 
 
     def add_job(self, order_data):
-        logger.debug("Adding order to queue: {}".format(order_data))
+        """Add job to Queue"""
+        logger.debug("Adding order to queue: %s", order_data)
         self.data.append(order_data)
 
 
     def cancel_job_order(self, order_id=None):
-        logger.info("Scanning queue to delete order_id: {}".format(order_id))
+        """
+        Search all jobs and delete each job with matching order ID
+        """
+        logger.info("Scanning queue to delete order_id: %s", order_id)
         items_deleted = 0
         return_msg = []
         for item in enumerate(self.data):
@@ -28,18 +40,19 @@ class JOB_QUEUE():
                 logger.info(return_msg)
                 del self.data[item[0]]
                 items_deleted += 1
-        
+
         if items_deleted > 0:
             logger.info("Deleted {} jobs".format(items_deleted))
         else:
             logger.warning("Could not find any jobs matching order_id {}".format(order_id))
             return_msg = "Could not find any jobs matching order_id {}".format(order_id)
             return (1, return_msg)
-        
+
         return  (0, return_msg)
 
 
     def cancel_job_id(self, job_id=None):
+        """Search queue for job id and delete"""
         logger.info("Scanning queue to delete job_id: {}".format(job_id))
         return_msg = ""
         for item in enumerate(self.data):
@@ -49,30 +62,35 @@ class JOB_QUEUE():
                 logger.info(return_msg)
                 del self.data[item[0]]
                 return (0, return_msg)
-        
-        logger.warning("Could not find any jobs matching job_id {} found".format(job_id))
 
-        return (1, "Could not find any jobs matching job_id {} found".format(job_id))
+        logger.warning("Could not find any jobs matching job_id %d found", job_id)
+
+        return (1, "Could not find any jobs matching job_id %d found", job_id)
 
 
     # Returns number of jobs
     def has_jobs(self):
+        """Return queue length"""
         return len(self.data)
-    
+
 
     def print_jobs(self):
+        """Print out job data"""
         if len(self.data) == 0:
             logger.info("No jobs available to print")
         else:
             for item in self.data:
-                logger.info("Item: {}".format(item))
-    
-    
+                logger.info("Item: %s", item)
+
+
     def next_job(self):
+        """
+        Pops next job if available & return job info
+        """
         if len(self.data) == 0:
             logger.warning("No items in queue!")
             return 0
-        
+
         return self.data.pop()
 
     # pop next job with available inventory
@@ -100,5 +118,3 @@ class JOB_QUEUE():
 
         logger.info("Could not find a job with available inventory")
         return False
-        
-
