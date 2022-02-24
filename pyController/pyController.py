@@ -75,14 +75,20 @@ def load_env():
 
 
 class ORCHASTRATOR():
-    def __init__(self, mqtt=None, queue=None, inventory=None):
-        self.mqtt = mqtt  # mqtt is optional
-        self.inventory = inventory
+    def __init__(self, mqtt=None, queue=None, inventory=None, factory=None):
         if queue is None:
             raise Exception("queue not specified")
+        elif inventory is None:
+            raise Exception("inventory not specified")
+        elif factory is None:
+            raise Exception("factory not specified")
         else:
-            self.queue=queue
-        
+
+        self.inventory=inventory
+        self.queue=queue
+        self.factory=factory
+        self.mqtt = mqtt  # mqtt is optional
+
 
     def add_job_callback(self, job_data):
         # Verify
@@ -162,7 +168,8 @@ class ORCHASTRATOR():
 
 
     def factory_update(self):
-        pass
+        self.factory.update()
+
 
     def factory_start_job(self):
         if self.queue.has_jobs:
@@ -185,8 +192,6 @@ class ORCHASTRATOR():
         return
 
 
-
-
 def main():
     logging.info("Starting factory python controller")
 
@@ -198,26 +203,47 @@ def main():
     mqtt.connect()
     time.sleep(1)
     mqtt.start()
-    
+
     logging.info("hello")
     logging.debug("Creating Job and orchastrator")
+
+    # Setup Job Queue and Inventory objects
     job_queue = factoryJobQueue.JOB_QUEUE()
     inventory = factory_inventory.FACTORY_INVENTORY()
     inventory.preset_inventory()
-    orchastrator = ORCHASTRATOR(mqtt=mqtt, queue=job_queue, inventory=inventory)
+
+    # Setup factory object
+    if False: # Use real factory
+        #import factoryModbus
+        factory = None
+    else:
+        import Factory_Sim2
+        factory = Factory_Sim2.Factory_Sim2()
+
+    # Setup orchastrator object
+    orchastrator = ORCHASTRATOR(mqtt=mqtt, queue=job_queue, inventory=inventory, factory=factory)
 
     # set mqtt callbacks
     mqtt.set_add_job_callback(orchastrator.add_job_callback)
     mqtt.set_cancel_job_callback(orchastrator.cancel_job_id_callback)
     mqtt.set_cancel_order_callback(orchastrator.cancel_job_order_callback)
 
-    
+
     logging.debug("Going into main loop")
     while True:
-        time.sleep(30)
-        mqtt.update()
-        orchastrator.send_inventory()
-        orchastrator.send_status()
+        count += 2
+        time.sleep(1)
+
+        if count % 5 == 0:
+            orchastrator.factory_update()
+            mqtt.update()
+
+        if count % 15 == 0:
+            orchastrator.send_status()
+
+        if count > 30:
+            orchastrator.send_inventory()
+            count = 0
 
 
 if __name__ == '__main__':
