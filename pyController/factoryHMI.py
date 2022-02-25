@@ -1,13 +1,11 @@
+
+import logging
+import os
+import sys
 from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QPushButton, QSpinBox
-from apscheduler.schedulers.background import BackgroundScheduler
-from pyModbusTCP.client import ModbusClient
 from dotenv import dotenv_values
-import factoryModbus as fm
 from PyQt5 import uic
 import FactoryUI
-import time
-import os, sys
-import logging
 
 
 
@@ -38,7 +36,7 @@ for item in config:
 class UI(QMainWindow):
     def __init__(self):
         super(UI, self).__init__()
-        self.factory = fm.FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
+        #self.factory = fm.FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
         #Load UI File
         uic.loadUi("FactoryUI.ui", self)
 
@@ -77,7 +75,7 @@ class UI(QMainWindow):
         #print(self.spinBoxY.cleanText())
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
-        self.factory.hbw_task1(x_value, y_value)
+        #self.factory.hbw_task1(x_value, y_value)
         return 1
 
     # Actions when the HBW task 2 button is clicked
@@ -86,49 +84,49 @@ class UI(QMainWindow):
         #print(self.spinBoxY.cleanText())
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
-        self.factory.hbw_task2(x_value, y_value)
+        #self.factory.hbw_task2(x_value, y_value)
         return 1
 
     # Actions from FACTORY class when the vgr task 1 button is clicked
     def vgr_t1_clicker(self):    
-        self.factory.vgr_task1()
+        #self.factory.vgr_task1()
         return 1
 
     # Actions from FACTORY class when the MPO task 1 button is clicked
     def mpo_t1_clicker(self):
-        self.factory.mpo_task1()
+        #self.factory.mpo_task1()
         return 1
 
     # Actions from FACTORY class when the SLD task 1 button is clicked
     def sld_t1_clicker(self):
-        self.factory.sld_task1()
+        #self.factory.sld_task1()
         return 1
 
     # Actions from FACTORY class when the START button is clicked
     def start_clicker(self):
         x_value = int(self.spinBoxX.cleanText())
         y_value = int(self.spinBoxY.cleanText())
-        self.factory.order(x_value, y_value)
+        #self.factory.order(x_value, y_value)
         return 1
 
     # Actions from FACTORY class when the SLD task 1 button is clicked
     def hbw_status_clicker(self):
-        self.factory.hbw_status()
+        #self.factory.hbw_status()
         return 1
 
     # Actions from FACTORY class when the SLD task 1 button is clicked
     def vgr_status_clicker(self):
-        self.factory.vgr_status()
+        #self.factory.vgr_status()
         return 1
 
     # Actions from FACTORY class when the SLD task 1 button is clicked
     def mpo_status_clicker(self):
-        self.factory.mpo_status()
+        #self.factory.mpo_status()
         return 1
 
     # Actions from FACTORY class when the SLD task 1 button is clicked
     def sld_status_clicker(self):
-        self.factory.sld_status()
+        #self.factory.sld_status()
         return 1
 
 #*****************************

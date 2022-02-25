@@ -1,12 +1,11 @@
 
-import enum
-from dotenv import dotenv_values
-import logging
-from logging.handlers import RotatingFileHandler
 import time
 import json
 import sys
 import os
+from dotenv import dotenv_values
+import logging
+from logging.handlers import RotatingFileHandler
 
 # factory modules import
 #import factoryModbus
@@ -36,13 +35,13 @@ rfh.backupCount=2               # how many rotated files to keep
 rfh.setFormatter(formatter)     # set format
 rfh.setLevel(logging.DEBUG)     # set level for file logging
 logger.addHandler(rfh)          # add filehandle to logger
- 
+
 # Logger: create console handle
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)     # set logging level for console
 ch.setFormatter(formatter)
 logger.addHandler(ch)
- 
+
 # reduce logging level of specificlibraries
 logging.getLogger("jobQueue").setLevel(logging.DEBUG)
 logging.getLogger("paho.mqtt.client").setLevel(logging.DEBUG)
@@ -69,7 +68,7 @@ def load_env():
     # Environment debug
     for item in config:
         logging.debug("Item: {}\tValue: {}".format(item, config[item]))
-    
+
     return config
 
 
@@ -82,7 +81,7 @@ class ORCHASTRATOR():
             raise Exception("queue not specified")
         else:
             self.queue=queue
-        
+
 
     def add_job_callback(self, job_data):
         # Verify
@@ -90,7 +89,7 @@ class ORCHASTRATOR():
             logging.error("Error: Invalid new_job data. dir: {}".format(dir(job_data)))
             self.send_job_notice("Error: Invalid new_job data: {}".format(job_data))
             raise Exception ("Bad job_data")
-        
+
         # Add to queue
         self.queue.add_job(job_data)
         log_msg = "Added job {} for order {} | color: {},  cook time: {}, sliced: {}".format(job_data['job_id'], job_data['order_id'], job_data['color'], job_data['cook_time'], job_data['slice'])
@@ -105,7 +104,7 @@ class ORCHASTRATOR():
             logging.error(log_msg)
             self.send_job_notice(log_msg)
             raise Exception (log_msg)
-        
+
         # Cancel Job
         cancel_msg = self.queue.cancel_job_id(job_id)
 
@@ -121,10 +120,10 @@ class ORCHASTRATOR():
             logging.error(log_msg)
             self.send_job_notice(log_msg)
             raise Exception (log_msg)
-        
+
         # Cancel order
         cancel_msg = self.queue.cancel_job_order(order_id)
-        
+
         # Report
         if cancel_msg[0] == 0:
             for item in cancel_msg[1]:
@@ -132,7 +131,7 @@ class ORCHASTRATOR():
                 self.send_job_notice(item)
         else:
             self.send_job_notice(cancel_msg[1])
-    
+
 
     def send_inventory(self):
         # Get inventory
@@ -165,6 +164,7 @@ class ORCHASTRATOR():
         pass
 
     def factory_start_job(self):
+        '''Start factory operation'''
         if self.queue.has_jobs:
             # Pop next job
             job_data = self.queue.next_available_job()
@@ -173,7 +173,7 @@ class ORCHASTRATOR():
 
             if job_data is False: # No job ready
                 logging.debug("No jobs ready with available inventory")
-            
+
             # Parse job
             slot = job_data[1]
             job_color = job_data[0]['color']
@@ -181,27 +181,29 @@ class ORCHASTRATOR():
             slice = job_data[0]['color']
 
             # Send to factory
-        
+
         return
 
 
 
 
 def main():
+    '''pyController main program'''
+
     logging.info("Starting factory python controller")
 
     config = load_env()
 
     logging.info("Starting factory MQTT")
-    mqtt = factoryMQTT.FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
-            TOPIC_SUB=config['MQTT_SUBSCRIBE'])
+    mqtt = factoryMQTT.FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
+        CLIENT_ID=config['MQTT_CLIENT_ID'], TOPIC_SUB=config['MQTT_SUBSCRIBE'])
     mqtt.connect()
     time.sleep(1)
     mqtt.start()
-    
+
     logging.info("hello")
     logging.debug("Creating Job and orchastrator")
-    job_queue = factoryJobQueue.JOB_QUEUE()
+    job_queue = factoryJobQueue.JobQueue()
     inventory = factory_inventory.FACTORY_INVENTORY()
     inventory.preset_inventory()
     orchastrator = ORCHASTRATOR(mqtt=mqtt, queue=job_queue, inventory=inventory)
@@ -211,7 +213,7 @@ def main():
     mqtt.set_cancel_job_callback(orchastrator.cancel_job_id_callback)
     mqtt.set_cancel_order_callback(orchastrator.cancel_job_order_callback)
 
-    
+
     logging.debug("Going into main loop")
     while True:
         time.sleep(30)

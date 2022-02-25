@@ -16,7 +16,7 @@ ch.setLevel(logging.DEBUG)     # set logging level for console
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# reduce logging level of specificlibraries
+# reduce logging level of specific libraries
 logging.getLogger("inventoryHandler").setLevel(logging.DEBUG)
 
 if __name__ == "__main__":

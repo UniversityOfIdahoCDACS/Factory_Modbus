@@ -27,18 +27,18 @@ def load_env():
         logging.debug("envLoc value: %r" % envLoc)
         sys.exit(1)
     try:
-        config = dotenv_values(envLoc) # loads .env file in current directoy
-    except:
-        logging.error("Error loading .env file")
+        loaded_config = dotenv_values(envLoc) # loads .env file in current directoy
+    except Exception as e:
+        logging.error("Error loading .env file {}".format(e))
         sys.exit(1)
 
     # Environment debug
-    for item in config:
-        logging.debug("Item: {}\tValue: {}".format(item, config[item]))
+    for item in loaded_config:
+        logging.debug("Item: {}\tValue: {}".format(item, loaded_config[item]))
 
-    return config
+    return loaded_config
 
-class FACTORY_MQTT(mqtt.Client):
+class FACTORY_MQTT():
     # Doc: https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
 
     def __init__(self, URL=None, PORT=None, CLIENT_ID="Unknown Client", TOPIC_SUB=None, TOPIC_PUB=None):
@@ -79,17 +79,8 @@ class FACTORY_MQTT(mqtt.Client):
         except Exception as e:
             self.logger.error("An exception of type {0} occurred. Arguments:\n{1!r}".format(type(e).__name__, e.args))
             sys.exit(1)
-    
 
-    # Called when the broker responds to our connection request
-    # client.connect callback
-    def on_connect(client, userdata, flags, rc):
-        if rc==0:
-            print("connected OK Returned code=",rc)
-        else:
-            print("Bad connection Returned code=",rc)
-        
-    
+
     # Publish to broker
     def publish(self, topic, payload=None, qos=0, retain=False):
         self.logger.info("Sending topic {} this payload: {}".format(topic, payload))
@@ -99,7 +90,7 @@ class FACTORY_MQTT(mqtt.Client):
             self.logger.error("Invalid topic set, qos invalid, or payload too long")
         except Exception as e:
             self.logger.error("An exception of type {0} occurred. Arguments:\n{1!r}".format(type(e).__name__, e.args))
-    
+
 
     # connect if needed and start subscription with broker
     def start(self):
@@ -111,7 +102,7 @@ class FACTORY_MQTT(mqtt.Client):
 
         # Send online message
         self.publish("Factory/Echo", payload="{} initialized".format(self.client_id))
-    
+
 
     # Stop and disconnect from broker
     def stop(self):
@@ -134,9 +125,9 @@ class FACTORY_MQTT(mqtt.Client):
     ## Callbacks
     def on_connect(self, client, userdata, flags, rc):
         if rc==0:
-            self.logger.info("connected OK Returned code=",rc)
+            self.logger.info("connected OK Returned code={}".format(rc))
         else:
-            self.logger.warning("Bad connection Returned code=",rc)
+            self.logger.warning("Bad connection Returned code={}".format(rc))
 
 
     def on_message(self, client, userdata, message):
@@ -170,7 +161,7 @@ class FACTORY_MQTT(mqtt.Client):
             elif mypayload['msg_type'] == 'cancel_order_id':
                 pass
             else:
-                self.mqtt.publish("Factory/Job_notice", "Invalid message type {}".format(mypayload['msg_type']))
+                self.publish("Factory/Job_notice", "Invalid message type {}".format(mypayload['msg_type']))
                 self.logger.error("Message received with invalid message type {}".format(mypayload['msg_type']))
         
 

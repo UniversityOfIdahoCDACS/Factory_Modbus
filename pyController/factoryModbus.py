@@ -1,10 +1,5 @@
-from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QPushButton, QSpinBox
-from apscheduler.schedulers.background import BackgroundScheduler
 from pyModbusTCP.client import ModbusClient
-from PyQt5 import uic
-import FactoryUI
 import time
-import sys
 
 #*****************************
 #*          MODBUS           *
@@ -26,7 +21,7 @@ class MODBUS():
         if not self.client.is_open():
             if not self.client.open():
                 print ("Unable to connect to %s:%d" % (self.ip, self.port))
-                raise "Unable to connecto to PLC controller"
+                raise Exception ("Unable to connecto to PLC controller")
         return True
     
     def refresh(self):
@@ -46,13 +41,13 @@ class MODBUS():
         #print ("Writing")
         responce = self.client.write_single_coil(addr,value)
         return responce
-        
+
     def read_reg(self,addr):
         self.connection_check()
         response =  self.client.read_holding_registers(addr,1)
         #print ("Modbus read_reg responce: %r" % response)
         return response
-    
+
     def write_reg(self,addr,val):
         self.connection_check()
         #print("Modbus write reg value: %r" % val)
@@ -70,7 +65,7 @@ class BIT():
         self.addr = addr -1
         self.value = 0
         self.mb = modbus
-    
+
     # 'set' writes 1 (True) to a given modbus coil (addr)
     def set(self):
         self.value = 1
@@ -110,11 +105,11 @@ class REGISTER():
         self.addr = addr -1
         self.value = 0
         self.mb = modbus
-    
+
     def write(self,value):
         self.value = value
         self.mb.write_reg(self.addr, value)
-    
+
     def read(self):
         self.value = str(self.mb.read_reg(self.addr))
         #print ("REG Val: %r" % self.value)
@@ -261,12 +256,12 @@ class MPO():
 
     def IsReady(self):
         return self.ready_status.read()
-    
+
     def StartTask1(self):
         self.Task1.set()
         self.Task1.clear()
         return 1
-    
+
     def StartSensorStatus(self):
         return str(self.light_start.read())
 
