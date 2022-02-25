@@ -47,22 +47,22 @@ class FACTORY_INVENTORY():
     
     # Return x, y of a matching slot. Return False if not found
     def find_color(self, color):
-        for row in enumerate(self.inventory):
-            for column in enumerate(row):
-                if column[1] == color:
-                    logger.debug("Found{} in slot {},{}".format(color, row[0], column[0]))
-                    return (row[0], column[0])
+        for row_index, row in enumerate(self.inventory):
+            for column_index, item in enumerate(row):
+                if item == color:
+                    logger.debug("Found{} in slot {},{}".format(color, row_index, column_index))
+                    return (row_index, column_index)
         logger.warning("Did not find {} in inventory".format(color))
         return False
 
     # Return x, y of a matching slot and mark slot as empty. Return False if not found
     def pop_color(self, color):
-        for row in enumerate(self.inventory):
-            for column in enumerate(row[1]):
-                #logger.debug(">> item is {}".format(column))
-                if column[1] == color:
-                    logger.debug("Found{} in slot {},{}".format(color, row[0], column[0]))
-                    self.set_slot(row[0], column[0], 'empty')
-                    return (row[0], column[0])
+        for row_index, row in enumerate(self.inventory):
+            for column_index, item in enumerate(row):
+                #logger.debug(">> item is {}".format(item))
+                if item == color:
+                    logger.debug("Found{} in slot {},{}".format(color, row_index, column_index))
+                    self.set_slot(row_index, column_index, 'empty')
+                    return (row_index, column_index)
         logger.warning("Did not find {} in inventory".format(color))
         return False
