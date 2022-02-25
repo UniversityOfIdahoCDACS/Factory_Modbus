@@ -1,5 +1,5 @@
 
-import enum
+
 from dotenv import dotenv_values
 import logging
 from logging.handlers import RotatingFileHandler
@@ -83,11 +83,16 @@ class ORCHASTRATOR():
         elif factory is None:
             raise Exception("factory not specified")
         else:
+            pass
 
         self.inventory=inventory
         self.queue=queue
         self.factory=factory
         self.mqtt = mqtt  # mqtt is optional
+
+        self.current_job = None
+        self.last_factory_state = None
+        
 
 
     def add_job_callback(self, job_data):
@@ -96,7 +101,7 @@ class ORCHASTRATOR():
             logging.error("Error: Invalid new_job data. dir: {}".format(dir(job_data)))
             self.send_job_notice("Error: Invalid new_job data: {}".format(job_data))
             raise Exception ("Bad job_data")
-        
+
         # Add to queue
         self.queue.add_job(job_data)
         log_msg = "Added job {} for order {} | color: {},  cook time: {}, sliced: {}".format(job_data['job_id'], job_data['order_id'], job_data['color'], job_data['cook_time'], job_data['slice'])
@@ -154,8 +159,8 @@ class ORCHASTRATOR():
     def send_status(self):
         if self.mqtt is not None:
             status = {}
-            status['factory_status'] = 'Offline'
-            status['current_job'] = 'None'
+            status['factory_status'] = self.factory.status()
+            status['current_job'] = str(self.current_job)
             status['job_queue_len'] = str(self.queue.has_jobs())
             self.mqtt.publish("Factory/Status", payload=json.dumps(status), qos=0)
         return
@@ -168,27 +173,52 @@ class ORCHASTRATOR():
 
 
     def factory_update(self):
-        self.factory.update()
+        """Run the factory's update function.
+           This should be called every 1-5 seconds"""
+        factory_state = self.factory.update()
+
+        # If factory just finished processing
+        if factory_state == 'ready' and self.last_factory_state =='processing':
+            # Job finished
+            message = "Job {} has been completed".format(self.current_job[0]['job_id'])
+            logging.info(message)
+            self.send_job_notice(message)
+            self.current_job = None
+
+        # If factory ready, start a job if available
+        elif factory_state == 'ready' and self.queue.has_jobs():
+            self.factory_start_job()
+
+        elif factory_state == 'processing':
+            logging.debug ("Factory processing...")
+
+        self.last_factory_state = factory_state
 
 
     def factory_start_job(self):
         if self.queue.has_jobs:
             # Pop next job
-            job_data = self.queue.next_available_job()
-            logging.debug("Starting job with data: {}".format(job_data))
+            current_job = self.queue.next_available_job(self.inventory) # returns (job, slot) or False
+            logging.info("Starting job with data: {}".format(self.current_job))
 
+            if self.current_job is False: # No job ready
+                logging.debug("Could not match waiting job with available inventory")
+                return
+            else:
+                self.current_job = current_job
 
-            if job_data is False: # No job ready
-                logging.debug("No jobs ready with available inventory")
-            
             # Parse job
-            slot = job_data[1]
-            job_color = job_data[0]['color']
-            cook_time = job_data[0]['cook_time']
-            slice = job_data[0]['color']
+            slot = current_job[1]
+            #job_color = self.current_job[0]['color']
+            cook_time = current_job[0]['cook_time']
+            do_slice = current_job[0]['slice']
+
+            # Verify data
+            #if not self.current_job['']
 
             # Send to factory
-        
+            self.factory.order(slot[0], slot[1], cook_time, do_slice)
+
         return
 
 
@@ -204,7 +234,6 @@ def main():
     time.sleep(1)
     mqtt.start()
 
-    logging.info("hello")
     logging.debug("Creating Job and orchastrator")
 
     # Setup Job Queue and Inventory objects
@@ -217,8 +246,8 @@ def main():
         #import factoryModbus
         factory = None
     else:
-        import Factory_Sim2
-        factory = Factory_Sim2.Factory_Sim2()
+        import FactorySim2
+        factory = FactorySim2.FactorySim2()
 
     # Setup orchastrator object
     orchastrator = ORCHASTRATOR(mqtt=mqtt, queue=job_queue, inventory=inventory, factory=factory)
@@ -228,11 +257,15 @@ def main():
     mqtt.set_cancel_job_callback(orchastrator.cancel_job_id_callback)
     mqtt.set_cancel_order_callback(orchastrator.cancel_job_order_callback)
 
+    add_job = {'job_id': 226, 'order_id': 201, 'color': "red", 'cook_time': 3, 'slice': True}
+    orchastrator.add_job_callback(add_job)
 
     logging.debug("Going into main loop")
+    count = 0
     while True:
         count += 2
         time.sleep(1)
+        print ("tick")
 
         if count % 5 == 0:
             orchastrator.factory_update()

@@ -1,5 +1,6 @@
 
-"""This simulates the input and output of the real factory module"""
+"""This simulates the input and output of the real factory module
+   Used as a drop in replacement for factoryModbus when the PLC is unavailable"""
 
 import logging
 import threading
@@ -26,14 +27,14 @@ class FactorySim2():
                     }
         return self.factory_state
 
-    def order(self, slot_x, slot_y, cook_time, slice):
+    def order(self, slot_x, slot_y, cook_time, do_slice):
         """ Load processing job order """
         if self.factory_ready:
             logger.info("Factory importing job data")
-            self.job_data = {'x': slot_x, 'y': slot_y, 'cook_time': cook_time, 'slice': slice}
+            self.job_data = {'x': slot_x, 'y': slot_y, 'cook_time': cook_time, 'do_slice': do_slice}
             return 0
         else:
-            logger.warning("Factory not ready. Not accepting job")
+            logger.error("Factory not ready. Not accepting job")
             return 1
 
 
@@ -68,6 +69,8 @@ class FactorySim2():
 
         else:
             raise Exception("Invalid factory_state set")
+        
+        return self.factory_state
 
 
     def process(self):

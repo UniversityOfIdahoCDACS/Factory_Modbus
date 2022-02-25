@@ -19,7 +19,7 @@ def main():
     ch.setLevel(logging.DEBUG)     # set logging level for console
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-    
+
     logging.getLogger('Factory_Sim2').setLevel(logging.DEBUG)
 
     fs = FactorySim2.FactorySim2()
@@ -29,7 +29,7 @@ def main():
     fs.update()
     sleep(2)
 
-    while (fs.status() != 'ready'):
+    while fs.status() != 'ready':
         logger.info("Factory Status: %s", fs.status())
         fs.update()
         sleep(1)
