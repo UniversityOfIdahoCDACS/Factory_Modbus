@@ -1,8 +1,7 @@
 
+"""This module tests the runability of jobQueue.py"""
 
 import logging
-import sys
-
 import factoryJobQueue
 
 logger = logging.getLogger()
@@ -22,14 +21,14 @@ if __name__ == '__main__':
     ch.setLevel(logging.DEBUG)     # set logging level for console
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-    
+
     logging.getLogger('Factory-Inventory').setLevel(logging.DEBUG)
 
 
     logger.info("Starting")
     logger.debug("Debug level")
 
-    q = factoryJobQueue.JOB_QUEUE()
+    q = factoryJobQueue.JobQueue()
 
     order = {'job_id': 123, 'order_id': 1, 'color': 'red', 'cook_time': 12, 'slice': True}
     q.add_job(order)
@@ -51,21 +50,20 @@ if __name__ == '__main__':
 
     logger.info(q.next_job())
 
+
     logger.info("Testing find next available job\n")
     import factory_inventory
     logging.getLogger("Factory_Inventory").setLevel(logging.INFO)
-    
+
     inv = factory_inventory.FACTORY_INVENTORY()
     inv.preset_inventory()
 
     job = q.next_available_job(inv)
-    logger.info("Job return: {}".format(job))
+    logger.info("Job return: %s", job)
 
     job = q.next_available_job(inv)
-    logger.info("Job return: {}".format(job))
+    logger.info("Job return: %s", job)
 
     job = q.next_available_job(inv)
-    logger.info("Job return: {}".format(job))
+    logger.info("Job return: %s", job)
     logger.info("End program")
-
-    sys.exit(0)

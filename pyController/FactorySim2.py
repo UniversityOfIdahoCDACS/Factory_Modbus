@@ -10,6 +10,8 @@ logger = logging.getLogger("FactorySim2")
 logger.setLevel(logging.DEBUG) # sets default logging level for module
 
 class FactorySim2():
+    """This class simulates the input and output of the real factory class
+       Used as a drop in replacement for factoryModbus when the PLC is unavailable"""
 
     def __init__(self):
         """ Initialize class instance"""
@@ -69,7 +71,7 @@ class FactorySim2():
 
         else:
             raise Exception("Invalid factory_state set")
-        
+
         return self.factory_state
 
 

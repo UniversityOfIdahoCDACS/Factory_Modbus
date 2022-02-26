@@ -1,6 +1,5 @@
 
-import paho.mqtt.client as mqtt
-from dotenv import dotenv_values
+
 import logging
 import time
 import json
@@ -8,6 +7,8 @@ import sys
 import os
 import socket       # Used for exception handling
 import ssl          # Used for MQTT TLS connection
+import paho.mqtt.client as mqtt
+from dotenv import dotenv_values
 
 #*********************************************
 #* * * * * * * * * Logger Setup * * * * * * * *
@@ -24,24 +25,24 @@ def load_env():
     # Test if exist then import .env
     if not os.path.exists(envLoc):
         logging.error(".env file not found")
-        logging.debug("envLoc value: %r" % envLoc)
+        logging.debug("envLoc value: %r", envLoc)
         sys.exit(1)
     try:
-        config = dotenv_values(envLoc) # loads .env file in current directoy
-    except:
-        logging.error("Error loading .env file")
+        loaded_config = dotenv_values(envLoc) # loads .env file in current directoy
+    except Exception as e:
+        logging.error("Error loading .env file %s", e)
         sys.exit(1)
 
     # Environment debug
-    for item in config:
-        logging.debug("Item: {}\tValue: {}".format(item, config[item]))
+    for item in loaded_config:
+        logging.debug("Item: %s\tValue: %s", item, loaded_config[item])
 
-    return config
+    return loaded_config
 
-class FACTORY_MQTT(mqtt.Client):
+class FACTORY_MQTT():
     # Doc: https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
 
-    def __init__(self, URL=None, PORT=None, CLIENT_ID="Unknown Client", TOPIC_SUB=None, TOPIC_PUB=None):
+    def __init__(self, URL=None, PORT=None, CLIENT_ID="Unknown Client", TOPIC_SUB=None):
         # Logger
         self.logger = logging.getLogger('FACTORY_MQTT')
         self.logger.setLevel(logging.DEBUG)
@@ -52,7 +53,7 @@ class FACTORY_MQTT(mqtt.Client):
         self.mqtt_port = PORT
         self.client_id = CLIENT_ID  # This client identifier
         self.topic_sub = TOPIC_SUB  # Primary subscriber topic
-        #self.topic_pub = TOPIC_PUB  # Primary publisher topic
+        print(f"sel topic_sub {self.topic_sub}")
 
         # MQTT Client config
         self.client = mqtt.Client(self.client_id, transport="websockets")
@@ -79,39 +80,30 @@ class FACTORY_MQTT(mqtt.Client):
         except Exception as e:
             self.logger.error("An exception of type {0} occurred. Arguments:\n{1!r}".format(type(e).__name__, e.args))
             sys.exit(1)
-    
 
-    # Called when the broker responds to our connection request
-    # client.connect callback
-    def on_connect(client, userdata, flags, rc):
-        if rc==0:
-            print("connected OK Returned code=",rc)
-        else:
-            print("Bad connection Returned code=",rc)
-        
-    
+
     # Publish to broker
     def publish(self, topic, payload=None, qos=0, retain=False):
-        self.logger.info("Sending topic {} this payload: {}".format(topic, payload))
+        self.logger.info("Sending topic %s this payload: %s", topic, payload)
         try:
             self.client.publish(topic, payload=payload, qos=qos, retain=retain)
         except ValueError:
             self.logger.error("Invalid topic set, qos invalid, or payload too long")
         except Exception as e:
             self.logger.error("An exception of type {0} occurred. Arguments:\n{1!r}".format(type(e).__name__, e.args))
-    
+
 
     # connect if needed and start subscription with broker
     def start(self):
         self.logger.info("Starting MQTT loop")
         self.client.loop_start()
 
-        self.logger.debug("Subscribing to {}".format(self.topic_sub))
+        self.logger.debug("Subscribing to %s", self.topic_sub)
         self.client.subscribe(self.topic_sub)
 
         # Send online message
-        self.publish("Factory/Echo", payload="{} initialized".format(self.client_id))
-    
+        self.publish("Factory/Echo", payload=f"{self.client_id} initialized")
+
 
     # Stop and disconnect from broker
     def stop(self):
@@ -123,9 +115,9 @@ class FACTORY_MQTT(mqtt.Client):
     # Health check and any periodic jobs
     def update(self):
         self.logger.debug("MQTT update")
-        self.logger.debug(">MQTT State: {}".format(self.client._state))
+        self.logger.debug(">MQTT State: %s", self.client._state)
         # check connection?
-    
+
     # TODO
     # Check if connected
     # Reconnect
@@ -133,30 +125,29 @@ class FACTORY_MQTT(mqtt.Client):
 
     ## Callbacks
     def on_connect(self, client, userdata, flags, rc):
-        if rc==0:
-            self.logger.info("connected OK Returned code=",rc)
+        if rc == 0:
+            self.logger.info("connected OK Returned code=%s", rc)
         else:
-            self.logger.warning("Bad connection Returned code=",rc)
+            self.logger.warning("Bad connection Returned code=%s", rc)
 
 
     def on_message(self, client, userdata, message):
         # We don't care about client. Returned client object
         # We don't care about userdata. Empty
 
-        self.logger.info("Message received! \tMsg: {}".format(message.payload))
-        
-        self.logger.debug(">> Message topic: {}".format(message.topic))
-        self.logger.debug(">> Message payload: {}".format(message.payload))
-        self.logger.debug(">> Message timestamp: {}".format(message.timestamp))
+        self.logger.info("Message received! \tMsg: %s", message.payload)
 
-        
+        self.logger.debug(">> Message topic: %s", message.topic)
+        self.logger.debug(">> Message payload: %s", message.payload)
+        self.logger.debug(">> Message timestamp: %s", message.timestamp)
+
         mypayload = json.loads(message.payload.decode("utf-8"))
         for item in mypayload:
-            self.logger.debug(">> Payload item {}\t value: {}".format(item, mypayload[item]))
+            self.logger.debug(">> Payload item %s\t value: %s", item, mypayload[item])
 
-        echo_msg = "Factory recieved message type {}".format(mypayload['msg_type'])
+        echo_msg = f"Factory recieved message type {mypayload['msg_type']}"
         self.publish('Factory/Echo', payload=echo_msg)
-        
+
         self.logger.debug("> Parsing message")
         if 'msg_type' in mypayload:
             if mypayload['msg_type'] == 'new_job':
@@ -164,24 +155,24 @@ class FACTORY_MQTT(mqtt.Client):
                 self.logger.info("Recieved new job")
                 if self.add_job_callback is not None:
                     self.add_job_callback(job_payload)
-            
+
             elif mypayload['msg_type'] == 'cancel_job_id':
                 pass
             elif mypayload['msg_type'] == 'cancel_order_id':
                 pass
             else:
-                self.mqtt.publish("Factory/Job_notice", "Invalid message type {}".format(mypayload['msg_type']))
-                self.logger.error("Message received with invalid message type {}".format(mypayload['msg_type']))
-        
+                self.publish("Factory/Job_notice", f"Invalid message type {mypayload['msg_type']}")
+                self.logger.error("Message received with invalid message type %s", mypayload['msg_type'])
 
-    def set_add_job_callback(self, foo):
-        self.add_job_callback = foo
-    
-    def set_cancel_job_callback(self, foo):
-        self.cancel_job_callback = foo
 
-    def set_cancel_order_callback(self, foo):
-        self.cancel_order_callback = foo
+    def set_add_job_callback(self, func):
+        self.add_job_callback = func
+
+    def set_cancel_job_callback(self, func):
+        self.cancel_job_callback = func
+
+    def set_cancel_order_callback(self, func):
+        self.cancel_order_callback = func
 
 
     def on_disconnect(self):
@@ -198,18 +189,16 @@ if __name__ == '__main__':
     config = load_env()
 
     m = FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
-            TOPIC_SUB=config['MQTT_SUBSCRIBE'], TOPIC_PUB=config['MQTT_PUBLISH'])
+                     TOPIC_SUB=config['MQTT_SUBSCRIBE'])
 
     m.connect()
 
     time.sleep(2)
     m.start()
-    
-    
+
     logger.debug("Going into main loop")
     while True:
         time.sleep(7)
         m.update()
 
     m.stop()
-    exit()
