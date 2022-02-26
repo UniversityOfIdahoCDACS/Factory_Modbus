@@ -34,18 +34,18 @@ class JobQueue():
         items_deleted = 0
         return_msg = []
         for index, job in enumerate(self._data):
-            logger.debug("Scanning Item: {}\tdata: {}".format(index, job))
+            logger.debug("Scanning Item: %d\tdata: %s", index, job)
             if job['order_id'] == order_id:
-                return_msg.append("Deleting Job #: {} from order {}".format(job['job_id'], job['order_id']))
+                return_msg.append(f"Deleting Job #: {job['job_id']} from order {job['order_id']}")
                 logger.info(return_msg)
                 del self._data[index]
                 items_deleted += 1
 
         if items_deleted > 0:
-            logger.info("Deleted {} jobs".format(items_deleted))
+            logger.info("Deleted %s jobs", items_deleted)
         else:
-            logger.warning("Could not find any jobs matching order_id {}".format(order_id))
-            return_msg = "Could not find any jobs matching order_id {}".format(order_id)
+            return_msg = f"Could not find any jobs matching order_id {order_id}"
+            logger.warning(return_msg)
             return (1, return_msg)
 
         return  (0, return_msg)
@@ -53,19 +53,19 @@ class JobQueue():
 
     def cancel_job_id(self, job_id=None):
         """Search queue for job id and delete"""
-        logger.info("Scanning queue to delete job_id: {}".format(job_id))
+        logger.info("Scanning queue to delete job_id: %s", job_id)
         return_msg = ""
         for index, job in enumerate(self._data):
-            logger.debug("Scanning Item: {}\tdata: {}".format(index, job))
+            logger.debug("Scanning Item: %s\tdata: %s", index, job)
             if job['job_id'] == job_id:
-                return_msg = "Deleting Job #: {} from order {}".format(job['job_id'], job['order_id'])
+                return_msg = f"Deleting Job #: {job['job_id']} from order {job['order_id']}"
                 logger.info(return_msg)
                 del self._data[index]
                 return (0, return_msg)
 
-        logger.warning("Could not find any jobs matching job_id %d found", job_id)
-
-        return (1, "Could not find any jobs matching job_id %d found", job_id)
+        return_msg = f"Could not find any jobs matching job_id {job_id} found"
+        logger.warning(return_msg)
+        return (1, return_msg)
 
 
     # Returns number of jobs
@@ -103,18 +103,18 @@ class JobQueue():
             if no, pass to next job
         '''
         for index, job in enumerate(self._data):
-            logger.debug("Looking at possible next job {}".format(job))
+            logger.debug("Looking at possible next job %s", job)
             job_color = job['color']
-            logger.debug("> job color: {}".format(job_color))
+            logger.debug("> job color: %s", job_color)
 
             # Check inventory for color
             slot = inventory.pop_color(job_color)
             if slot is False: # no color found in inventory
-                continue # look at next job
-            else:
-                logger.info("Found available job {} for color {} in slot {}".format(job, job_color, slot))
-                del self._data[index]   # Delete job in queue
-                return (job, slot)           # Pass back job data
+                continue # look at next jobdf
+
+            logger.info("Found available job %s for color %s in slot %s", job, job_color, slot)
+            del self._data[index]   # Delete job in queue
+            return (job, slot)           # Pass back job data
 
         logger.info("Could not match waiting job with available inventory")
         return False

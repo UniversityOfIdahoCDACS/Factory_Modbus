@@ -3,9 +3,9 @@ import time
 import json
 import sys
 import os
-from dotenv import dotenv_values
 import logging
 from logging.handlers import RotatingFileHandler
+from dotenv import dotenv_values
 
 # factory modules import
 #import factoryModbus
@@ -23,15 +23,15 @@ import factoryMQTT
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG) # sets default logging level for all modules
 #logger.
- 
+
 # Create formatter
 #formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] [%(threadName)s] - %(message)s')
 formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] - %(message)s')
 
 # Logger: create rotating file handler
 rfh = RotatingFileHandler('app_rot.log')
-rfh.maxBytes=1024*1024          # maximum size of a log before being rotated
-rfh.backupCount=2               # how many rotated files to keep
+rfh.maxBytes = 1024*1024          # maximum size of a log before being rotated
+rfh.backupCount = 2               # how many rotated files to keep
 rfh.setFormatter(formatter)     # set format
 rfh.setLevel(logging.DEBUG)     # set level for file logging
 logger.addHandler(rfh)          # add filehandle to logger
@@ -56,20 +56,19 @@ def load_env():
     # Test if exist then import .env
     if not os.path.exists(envLoc):
         logging.error(".env file not found")
-        logging.debug("envLoc value: %r" % envLoc)
+        logging.debug("envLoc value: %r", envLoc)
         sys.exit(1)
     try:
-        config = dotenv_values(envLoc) # loads .env file in current directoy
+        loaded_config = dotenv_values(envLoc) # loads .env file in current directoy
     except Exception as e:
-        logging.error("Error loading .env file")
-        logging.error("An exception of type {0} occurred. Arguments:\n{1!r}".format(type(e).__name__, e.args))
+        logging.error("Error loading .env file %s", e)
         sys.exit(1)
 
     # Environment debug
-    for item in config:
-        logging.debug("Item: {}\tValue: {}".format(item, config[item]))
+    for item in loaded_config:
+        logging.debug("Item: %s\tValue: %s", item, loaded_config[item])
 
-    return config
+    return loaded_config
 
 
 
@@ -81,29 +80,27 @@ class ORCHASTRATOR():
             raise Exception("inventory not specified")
         elif factory is None:
             raise Exception("factory not specified")
-        else:
-            pass
 
-        self.inventory=inventory
-        self.queue=queue
-        self.factory=factory
+        self.inventory = inventory
+        self.queue = queue
+        self.factory = factory
         self.mqtt = mqtt  # mqtt is optional
 
         self.current_job = None
         self.last_factory_state = None
-        
 
 
     def add_job_callback(self, job_data):
         # Verify
         if not ('job_id' and 'order_id' and 'color' and 'cook_time' and 'slice' in job_data):
-            logging.error("Error: Invalid new_job data. dir: {}".format(dir(job_data)))
-            self.send_job_notice("Error: Invalid new_job data: {}".format(job_data))
-            raise Exception ("Bad job_data")
+            log_msg = f"Error: Invalid new_job data. dir: {dir(job_data)}"
+            logging.error(log_msg)
+            self.send_job_notice(log_msg)
+            raise Exception("Bad job_data")
 
         # Add to queue
         self.queue.add_job(job_data)
-        log_msg = "Added job {} for order {} | color: {},  cook time: {}, sliced: {}".format(job_data['job_id'], job_data['order_id'], job_data['color'], job_data['cook_time'], job_data['slice'])
+        log_msg = f"Added job {job_data['job_id']} for order {job_data['order_id']} | color: {job_data['color']},  cook time: {job_data['cook_time']}, sliced: {job_data['slice']}"
         self.send_job_notice(log_msg)
         logging.info(log_msg)
 
@@ -111,10 +108,10 @@ class ORCHASTRATOR():
     def cancel_job_id_callback(self, job_id):
         # Verify
         if not (isinstance(job_id, int) and job_id >= 0):
-            log_msg = "Error: Invalid cancel job id: {}".format(job_id)
+            log_msg = f"Error: Invalid cancel job id: {job_id}"
             logging.error(log_msg)
             self.send_job_notice(log_msg)
-            raise Exception (log_msg)
+            raise Exception(log_msg)
 
         # Cancel Job
         cancel_msg = self.queue.cancel_job_id(job_id)
@@ -127,10 +124,10 @@ class ORCHASTRATOR():
     def cancel_job_order_callback(self, order_id):
         # Verify
         if not (isinstance(order_id, int) and order_id >= 0):
-            log_msg = "Error: Invalid cancel order id: {}".format(order_id)
+            log_msg = f"Error: Invalid cancel order id: {order_id}"
             logging.error(log_msg)
             self.send_job_notice(log_msg)
-            raise Exception (log_msg)
+            raise Exception(log_msg)
 
         # Cancel order
         cancel_msg = self.queue.cancel_job_order(order_id)
@@ -149,7 +146,7 @@ class ORCHASTRATOR():
         if self.mqtt is not None:
             inv = {}
             inv['Inventory'] = self.inventory.get_inventory()
-            logging.debug("Got inventory: {}".format(inv))
+            logging.debug("Got inventory: %s", inv)
 
             self.mqtt.publish('Factory/Inventory', payload=json.dumps(inv), qos=0)
         return
@@ -177,9 +174,9 @@ class ORCHASTRATOR():
         factory_state = self.factory.update()
 
         # If factory just finished processing
-        if factory_state == 'ready' and self.last_factory_state =='processing':
+        if factory_state == 'ready' and self.last_factory_state == 'processing':
             # Job finished
-            message = "Job {} has been completed".format(self.current_job[0]['job_id'])
+            message = f"Job {self.current_job[0]['job_id']} has been completed"
             logging.info(message)
             self.send_job_notice(message)
             self.current_job = None
@@ -189,7 +186,7 @@ class ORCHASTRATOR():
             self.factory_start_job()
 
         elif factory_state == 'processing':
-            logging.debug ("Factory processing...")
+            logging.debug("Factory processing...")
 
         self.last_factory_state = factory_state
 
@@ -199,7 +196,7 @@ class ORCHASTRATOR():
         if self.queue.has_jobs:
             # Pop next job
             current_job = self.queue.next_available_job(self.inventory) # returns (job, slot) or False
-            logging.info("Starting job with data: {}".format(self.current_job))
+            logging.info("Starting job with data: %s", self.current_job)
 
             if self.current_job is False: # No job ready
                 logging.debug("Could not match waiting job with available inventory")
@@ -231,7 +228,7 @@ def main():
 
     logging.info("Starting factory MQTT")
     mqtt = factoryMQTT.FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
-        CLIENT_ID=config['MQTT_CLIENT_ID'], TOPIC_SUB=config['MQTT_SUBSCRIBE'])
+                                    CLIENT_ID=config['MQTT_CLIENT_ID'], TOPIC_SUB=config['MQTT_SUBSCRIBE'])
     mqtt.connect()
     time.sleep(1)
     mqtt.start()
@@ -239,7 +236,7 @@ def main():
     logging.debug("Creating Job and orchastrator")
 
     # Setup Job Queue and Inventory objects
-    job_queue = factoryJobQueue.JOB_QUEUE()
+    job_queue = factoryJobQueue.JobQueue()
     inventory = factory_inventory.FACTORY_INVENTORY()
     inventory.preset_inventory()
 
@@ -259,7 +256,7 @@ def main():
     mqtt.set_cancel_job_callback(orchastrator.cancel_job_id_callback)
     mqtt.set_cancel_order_callback(orchastrator.cancel_job_order_callback)
 
-    add_job = {'job_id': 226, 'order_id': 201, 'color': "red", 'cook_time': 3, 'slice': True}
+    add_job = {'job_id': 999, 'order_id': 10999, 'color': "red", 'cook_time': 3, 'slice': True}
     orchastrator.add_job_callback(add_job)
 
     logging.debug("Going into main loop")
@@ -267,7 +264,6 @@ def main():
     while True:
         count += 2
         time.sleep(1)
-        print ("tick")
 
         if count % 5 == 0:
             orchastrator.factory_update()

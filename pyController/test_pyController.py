@@ -3,6 +3,7 @@
 
 import logging
 import factoryJobQueue
+import factory_inventory
 import pyController
 
 
@@ -13,10 +14,23 @@ def main():
     """Main Function"""
     logger.info("test pyController started")
 
-    logger.info("hello")
     logger.debug("Creating Job and orchastrator")
+
+    # Setup Job Queue and Inventory objects
     job_queue = factoryJobQueue.JobQueue()
-    orchastrator = pyController.ORCHASTRATOR(mqtt=None, queue=job_queue)
+    inventory = factory_inventory.FACTORY_INVENTORY()
+    inventory.preset_inventory()
+
+    # Setup factory object
+    if False: # Use real factory
+        #import factoryModbus
+        factory = None
+    else:
+        import FactorySim2
+        factory = FactorySim2.FactorySim2()
+
+    # Setup orchastrator object
+    orchastrator = pyController.ORCHASTRATOR(mqtt=None, queue=job_queue, inventory=inventory, factory=factory)
 
     if True:
         logger.info("Running Tests")
@@ -35,7 +49,6 @@ def main():
         orchastrator.cancel_job_id_callback(1256)
         orchastrator.cancel_job_order_callback(201)
         orchastrator.cancel_job_order_callback(201201)
-
 
 
 if __name__ == '__main__':

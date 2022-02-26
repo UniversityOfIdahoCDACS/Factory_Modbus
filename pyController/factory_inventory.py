@@ -1,3 +1,4 @@
+
 """Factory inventory class"""
 
 import logging
@@ -19,8 +20,8 @@ class FACTORY_INVENTORY():
     def preset_inventory(self):
         """Presets inventory to a known configuration """
         self.inventory = [['red', 'empty', 'red'],
-                        ['empty', 'white', 'white'],
-                        ['blue', 'blue', 'blue']]
+                          ['empty', 'white', 'white'],
+                          ['blue', 'blue', 'blue']]
         logger.debug("Factory Inventory using preset configuration")
 
     # Returns entire inventory
@@ -57,12 +58,13 @@ class FACTORY_INVENTORY():
         Return x, y of a matching slot.
         Return False if not found
         """
+
         for row_index, row in enumerate(self.inventory):
             for column_index, item in enumerate(row):
                 if item == color:
-                    logger.debug("Found{} in slot {},{}".format(color, row_index, column_index))
+                    logger.debug("Found %s in slot %d,%d", color, row_index, column_index)
                     return (row_index, column_index)
-        logger.warning("Did not find {} in inventory".format(color))
+        logger.warning("Did not find %s in inventory", color)
         return False
 
     # Return x, y of a matching slot and mark slot as empty. Return False if not found
@@ -75,8 +77,8 @@ class FACTORY_INVENTORY():
             for column_index, item in enumerate(row):
                 #logger.debug(">> item is {}".format(item))
                 if item == color:
-                    logger.debug("Found{} in slot {},{}".format(color, row_index, column_index))
+                    logger.debug("Found %s in slot %d,%d", color, row_index, column_index)
                     self.set_slot(row_index, column_index, 'empty')
                     return (row_index, column_index)
-        logger.warning("Did not find {} in inventory".format(color))
+        logger.warning("Did not find %s in inventory", color)
         return False
