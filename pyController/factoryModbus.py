@@ -136,6 +136,9 @@ class HBW():
     def IsReady(self):
         #print("**************READY STATUS***")
         return self.status_ready.read()
+    
+    def IsFault(self):
+        return self.status_fault.read()
 
     def CurrentProgress(self):
         return self.cur_progress.read()
@@ -196,6 +199,12 @@ class VGR():
 
     def IsReady(self):
         return self.status_ready.read()
+    
+    def IsFault(self):
+        if self.fault_code.read() > 0:
+            return True
+        else:
+            return False
 
     def StartTask1(self):
         self.Task1.set()
@@ -259,6 +268,9 @@ class MPO():
 
     def IsReady(self):
         return self.ready_status.read()
+    
+    def IsFault(self):
+        return self.fault_status.read()
 
     def StartTask1(self):
         self.Task1.set()
@@ -311,6 +323,15 @@ class SLD():
     def IsReady(self):
         #print("HERE: ", self.status_ready.read())
         return self.status_ready.read()
+    
+    def IsFault(self):
+        if self.fault_status_1.read():
+            return True
+        elif self.fault_status_2.read():
+            return True
+        elif self.fault_status_3.read():
+            return True
+        return False
 
     def StartTask1(self):
         self.Task1.set()
@@ -397,6 +418,27 @@ class FACTORY():
         self.mpo.StartSensorStatus()
         self.sld.IsReady()
         #self.hbw.HBW_Status()
+    
+    def status(self):
+        factory_status = 'unknown'
+        modules = [self.hbw, self.vgr, self.mpo, self.sld]
+
+        # Check for Faults
+        for module in modules:
+            if module.IsFault():
+                factory_status = 'fault'
+                return factory_status
+                
+        
+        # If no faults, test for all ready
+        factory_status = 'idle'
+        for module in modules:
+            if not module.IsReady():
+                factory_status = 'running'
+                break
+
+        return factory_status
+
 
     def order(self, x_value, y_value):
         stage_1_flag = False #HBW -> VGR -> MPO also HBW return pallet
