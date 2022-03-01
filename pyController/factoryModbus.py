@@ -1,5 +1,6 @@
 
 import time
+import threading
 from pyModbusTCP.client import ModbusClient
 
 #*****************************
@@ -15,8 +16,7 @@ class MODBUS():
         self.port = port
 
     def __del__(self):
-        #self.client.close()
-        pass
+        self.client.close()
 
     def connection_check(self):
         if not self.client.is_open():
@@ -24,13 +24,6 @@ class MODBUS():
                 print("Unable to connect to %s:%d" % (self.ip, self.port))
                 raise Exception("Unable to connecto to PLC controller")
         return True
-
-    def refresh(self):
-        #pull from modbus
-        pass
-
-    def send(self):
-        print("Sending")
 
     def read_coil(self, addr):
         self.connection_check()
@@ -136,7 +129,7 @@ class HBW():
     def IsReady(self):
         #print("**************READY STATUS***")
         return self.status_ready.read()
-    
+
     def IsFault(self):
         return self.status_fault.read()
 
@@ -199,7 +192,7 @@ class VGR():
 
     def IsReady(self):
         return self.status_ready.read()
-    
+
     def IsFault(self):
         if self.fault_code.read() > 0:
             return True
@@ -268,7 +261,7 @@ class MPO():
 
     def IsReady(self):
         return self.ready_status.read()
-    
+
     def IsFault(self):
         return self.fault_status.read()
 
@@ -323,7 +316,7 @@ class SLD():
     def IsReady(self):
         #print("HERE: ", self.status_ready.read())
         return self.status_ready.read()
-    
+
     def IsFault(self):
         if self.fault_status_1.read():
             return True
@@ -418,18 +411,20 @@ class FACTORY():
         self.mpo.StartSensorStatus()
         self.sld.IsReady()
         #self.hbw.HBW_Status()
-    
+
     def status(self):
-        factory_status = 'unknown'
+        factory_status = 'offline'
         modules = [self.hbw, self.vgr, self.mpo, self.sld]
+
+        # Test if online
+        #TODO
 
         # Check for Faults
         for module in modules:
             if module.IsFault():
                 factory_status = 'fault'
                 return factory_status
-                
-        
+
         # If no faults, test for all ready
         factory_status = 'idle'
         for module in modules:
@@ -441,43 +436,62 @@ class FACTORY():
 
 
     def order(self, x_value, y_value):
-        stage_1_flag = False #HBW -> VGR -> MPO also HBW return pallet
-        stage_2_flag = False #
-        stage_3_flag = False
+        self.process_order()
 
-        hbw_ready_status = str(self.hbw.IsReady())
-        # Run HBW
-        if hbw_ready_status == "True":
-            print("HBW Is Ready: " + hbw_ready_status)
-            self.hbw.StartTask1(x_value, y_value) #HBW STARTS
-            stage_1_flag = True
-        else:
-            print("HBW Is Not Ready: " + hbw_ready_status)
-        # Run VGR and HBW return
-        while stage_1_flag:
+
+    def process_order(self):
+
+        def stage_1(self):
+            """
+            Stage 1
+            HBW -> VGR -> MPO also HBW return pallet
+            """
             hbw_ready_status = str(self.hbw.IsReady())
-            if str(self.hbw.CurrentProgress()) == "[80]":
-                self.vgr.StartTask1() #VGR STARTS
-            elif hbw_ready_status == "True":
-                time.sleep(2)
-                self.hbw.StartTask2(x_value, y_value)#Return Pallet
-                stage_1_flag = False
-                stage_2_flag = True
+            # Run HBW
+            if hbw_ready_status == "True":
+                print("HBW Is Ready: " + hbw_ready_status)
+                self.hbw.StartTask1(x_value, y_value) #HBW STARTS
+                stage_1_flag = True
+            else:
+                print("HBW Is Not Ready: " + hbw_ready_status)
 
-        while stage_2_flag:
-            mpo_start_light = str(self.mpo.StartSensorStatus())
-            if mpo_start_light == "False":
-                time.sleep(1)
-                self.mpo.StartTask1()#Add values to change
-                stage_2_flag = False
-                stage_3_flag = True
+            # Run VGR and HBW return
+            while True:
+                hbw_ready_status = str(self.hbw.IsReady())
+                if str(self.hbw.CurrentProgress()) == "[80]":
+                    self.vgr.StartTask1() #VGR STARTS
+                elif hbw_ready_status == "True":
+                    time.sleep(2)
+                    self.hbw.StartTask2(x_value, y_value)#Return Pallet
+                    break
 
-        while stage_3_flag:
-            mpo_end_light = str(self.mpo.EndSensorStatus())
-            #print("stage 3 end light: "+mpo_end_light)
-            if mpo_end_light == "False":
-                self.sld.StartTask1()
-                stage_3_flag = False
+        def stage_2():
+            """
+            Stage 2
+            """
+            while True:
+                mpo_start_light = str(self.mpo.StartSensorStatus())
+                if mpo_start_light == "False":
+                    time.sleep(1)
+                    self.mpo.StartTask1()#Add values to change
+                    break
+
+        def stage_3():
+            """
+            Stage 3
+            """
+            while True:
+                mpo_end_light = str(self.mpo.EndSensorStatus())
+                #print("stage 3 end light: "+mpo_end_light)
+                if mpo_end_light == "False":
+                    self.sld.StartTask1()
+                    break
+
+        stage_1()
+        stage_2()
+        stage_3()
+        return
+
 
     # HBW Factory Logic
     def hbw_task1(self, x_value, y_value):

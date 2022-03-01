@@ -22,7 +22,6 @@ import factoryMQTT
 # Create logger
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG) # sets default logging level for all modules
-#logger.
 
 # Create formatter
 #formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] [%(threadName)s] - %(message)s')
@@ -42,7 +41,7 @@ ch.setLevel(logging.INFO)     # set logging level for console
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-# reduce logging level of specificlibraries
+# reduce logging level of specific libraries
 logging.getLogger("jobQueue").setLevel(logging.DEBUG)
 logging.getLogger("paho.mqtt.client").setLevel(logging.DEBUG)
 
@@ -285,7 +284,10 @@ def main():
         if count % 15 == 0:
             orchastrator.send_status()
 
-        if count > 30:
+        if count % 30 == 0:
+            orchastrator.send_inventory()
+
+        if count > 61:
             orchastrator.send_inventory()
             count = 0
 
