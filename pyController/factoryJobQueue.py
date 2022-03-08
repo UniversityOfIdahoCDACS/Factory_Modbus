@@ -7,7 +7,7 @@ Depends on factory_inventory
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG) # sets default logging level for this module
+logger.setLevel(logging.DEBUG) # sets default logging level for all modules
 
 class JobQueue():
     """
@@ -31,41 +31,39 @@ class JobQueue():
         Search all jobs and delete each job with matching order ID
         """
         logger.info("Scanning queue to delete order_id: %s", order_id)
-        items_deleted = 0
-        return_msg = []
+        canceled_jobs = []
         for index, job in enumerate(self._data):
             logger.debug("Scanning Item: %d\tdata: %s", index, job)
             if job['order_id'] == order_id:
-                return_msg.append(f"Deleting Job #: {job['job_id']} from order {job['order_id']}")
-                logger.info(return_msg)
+                log_msg = f"Deleting Job #: {job['job_id']} from order {job['order_id']}"
+                canceled_jobs.append(job['job_id'])
+                logger.info(log_msg)
                 del self._data[index]
-                items_deleted += 1
 
-        if items_deleted > 0:
-            logger.info("Deleted %s jobs", items_deleted)
+        if len(canceled_jobs) > 0:
+            logger.info("Deleted %d jobs", len(canceled_jobs))
         else:
-            return_msg = f"Could not find any jobs matching order_id {order_id}"
-            logger.warning(return_msg)
-            return (1, return_msg)
+            log_msg = f"Could not find any jobs matching order_id {order_id}"
+            logger.warning(log_msg)
+            return [] # return with empty list of deleted jobs
 
-        return  (0, return_msg)
+        return canceled_jobs # return list of deleted jobs
 
 
     def cancel_job_id(self, job_id=None):
         """Search queue for job id and delete"""
         logger.info("Scanning queue to delete job_id: %s", job_id)
-        return_msg = ""
         for index, job in enumerate(self._data):
             logger.debug("Scanning Item: %s\tdata: %s", index, job)
             if job['job_id'] == job_id:
-                return_msg = f"Deleting Job #: {job['job_id']} from order {job['order_id']}"
-                logger.info(return_msg)
+                log_msg = f"Deleting Job #: {job['job_id']} from order {job['order_id']}"
+                logger.info(log_msg)
                 del self._data[index]
-                return (0, return_msg)
+                return [job_id] # return list of deleted jobs
 
-        return_msg = f"Could not find any jobs matching job_id {job_id} found"
-        logger.warning(return_msg)
-        return (1, return_msg)
+        log_msg = f"Could not find any jobs matching job_id {job_id} found"
+        logger.warning(log_msg)
+        return [] # return with empty list of deleted jobs
 
 
     # Returns number of jobs
