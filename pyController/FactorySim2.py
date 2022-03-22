@@ -4,6 +4,7 @@
 
 import logging
 import threading
+import sys
 from time import sleep
 
 logger = logging.getLogger("FactorySim2")
@@ -21,6 +22,7 @@ class FactorySim2():
         self.job_data = None
 
         self.processing_thread = None
+        self.processing_thread_stop = False
 
     def status(self):
         """ Returns the state of the factory """
@@ -74,17 +76,37 @@ class FactorySim2():
 
         return self.factory_state
 
+    def stop(self):
+        """ Set stop flag for simulation thread"""
+        self.processing_thread_stop = True
+        if self.processing_thread is not None:
+            self.processing_thread.join()
+
 
     def process(self):
         """ Simulate processing """
+
+        def wait(self, sleep_time):
+            """ Wait function that monitors a thread stop condition """
+            for i in range(sleep_time):
+                if self.processing_thread_stop:
+                    logger.info("FactorySim thread exiting")
+                    sys.exit(0)
+                else:
+                    sleep(1)
+
         logger.info("Processing Started")
-        sleep(3)
+        # sleep(3)
+        wait(self, 10)
         logger.info("Processing ...")
-        sleep(3)
+        # sleep(3)
+        wait(self, 10)
         logger.info("Processing ...")
-        sleep(3)
+        # sleep(3)
+        wait(self, 10)
         logger.info("Processing ...")
-        sleep(3)
+        # sleep(3)
+        wait(self, 10)
         logger.info("Processing Finished")
         self.job_data = None
         return

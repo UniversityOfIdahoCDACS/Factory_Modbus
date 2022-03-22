@@ -27,12 +27,16 @@ def main():
 
     fs.order(1, 2, 3, 4)
     fs.update()
-    sleep(2)
+    sleep(0.01)
 
     while fs.status() != 'ready':
         logger.info("Factory Status: %s", fs.status())
         fs.update()
-        sleep(1)
+        try:
+            sleep(1)
+        except KeyboardInterrupt:
+            logger.info("Stopping")
+            fs.stop()
 
     logger.info("Factory job completed. Status: %s", fs.status())
     logger.info("End test")
