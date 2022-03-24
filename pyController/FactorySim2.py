@@ -16,8 +16,6 @@ class FactorySim2():
 
     def __init__(self):
         """ Initialize class instance"""
-        self.factory_ready = True
-        self.factory_fault = False
         self.factory_state = "ready" # [ready, processing, fault, offline]
         self.job_data = None
 
@@ -26,14 +24,11 @@ class FactorySim2():
 
     def status(self):
         """ Returns the state of the factory """
-        status_val = {'status': self.factory_ready,
-                    'fault': self.factory_fault
-                    }
         return self.factory_state
 
     def order(self, slot_x, slot_y, cook_time, do_slice):
         """ Load processing job order """
-        if self.factory_ready:
+        if self.factory_state == 'ready':
             logger.info("Factory importing job data")
             self.job_data = {'x': slot_x, 'y': slot_y, 'cook_time': cook_time, 'do_slice': do_slice}
             return 0
@@ -51,7 +46,6 @@ class FactorySim2():
             if self.job_data is not None:
                 # Start job
                 logger.info("Factory starting processing of a job")
-                self.factory_ready = False
                 self.factory_state = 'processing'
                 # Start thread
                 logger.info("Starting processing thread")
@@ -62,7 +56,6 @@ class FactorySim2():
             logger.debug("Factory processing an order")
             if not self.processing_thread.is_alive():
                 logger.info("Job completed")
-                self.factory_ready = True
                 self.factory_state = 'ready'
 
         elif self.factory_state == 'offline':
