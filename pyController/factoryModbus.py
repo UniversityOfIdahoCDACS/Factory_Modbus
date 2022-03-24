@@ -1,7 +1,13 @@
 
 import time
+import sys
+import logging
 import threading
 from pyModbusTCP.client import ModbusClient
+
+logger = logging.getLogger("factoryModbus")
+logger.setLevel(logging.DEBUG) # sets default logging level for module
+
 
 #*****************************
 #*          MODBUS           *
@@ -21,14 +27,20 @@ class MODBUS():
     def connection_check(self):
         if not self.client.is_open():
             if not self.client.open():
-                print("Unable to connect to %s:%d" % (self.ip, self.port))
+                print("Unable to connect to %s:%s" % (self.ip, self.port))
                 raise Exception("Unable to connecto to PLC controller")
         return True
 
     def read_coil(self, addr):
         self.connection_check()
-        #print ("Reading")
-        return self.client.read_coils(addr, 1)
+        logger.debug("Reading coil %s", addr)
+        try:
+            val = self.client.read_coils(addr, 1)
+        except ValueError:
+            logger.error("Value error occured while readying coil %s", addr)
+            return 0
+
+        return val
 
     def write_coil(self, addr, value):
         self.connection_check()
@@ -38,9 +50,32 @@ class MODBUS():
 
     def read_reg(self, addr):
         self.connection_check()
-        response = self.client.read_holding_registers(addr, 1)
-        #print ("Modbus read_reg responce: %r" % response)
-        return response
+        try:
+            response = self.client.read_holding_registers(addr, 1)
+        except ValueError:
+            logger.error("Value error occured while readying reg %s", addr)
+            responce = [0] # Not great but it prevents the logic from crashing
+        #print (f"Modbus read_reg responce: {response}, type: {type(response)}")
+
+        if response is None:
+            logger.warning("Response is None trying again")
+            time.sleep(0.3)
+            try:
+                response = self.client.read_holding_registers(addr, 1)
+            except ValueError:
+                logger.error("Value error occured while readying reg %s", addr)
+            
+            if response is None:
+                response = [0]
+            
+
+        try:
+            return_val = int(response[0])
+        except ValueError:
+            print(f"Value error occured while converting to int {addr}")
+            return_val = 0
+
+        return return_val
 
     def write_reg(self, addr, val):
         self.connection_check()
@@ -107,9 +142,9 @@ class REGISTER():
         self.mb.write_reg(self.addr, value)
 
     def read(self):
-        self.value = str(self.mb.read_reg(self.addr))
-        #print ("REG Val: %r" % self.value)
-        return self.value
+        val = self.mb.read_reg(self.addr)
+        self.value = val
+        return val
 
 #*****************************
 #*           HBW             *
@@ -194,7 +229,8 @@ class VGR():
         return self.status_ready.read()
 
     def IsFault(self):
-        if self.fault_code.read() > 0:
+        value = self.fault_code.read()
+        if self.fault_code.read() > 0: 
             return True
         else:
             return False
@@ -271,10 +307,10 @@ class MPO():
         return 1
 
     def StartSensorStatus(self):
-        return str(self.light_start.read())
+        return self.light_start.read()
 
     def EndSensorStatus(self):
-        return str(self.light_end.read())
+        return self.light_end.read()
 
     def MPO_Status(self):
         print("************************")
@@ -397,13 +433,14 @@ class SSC():
 #*****************************
 class FACTORY():
     def __init__(self, ip, port):
+        logger.debug("Factory Modbus Initializing...")
         self.mb = MODBUS(ip, port)
         self.hbw = HBW(self.mb)
         self.vgr = VGR(self.mb)
         self.mpo = MPO(self.mb)
         self.sld = SLD(self.mb)
         self.ssc = SSC(self.mb)
-        print("ready stuff here")
+
         #check ready status
         self.hbw.IsReady()
         self.vgr.IsReady()
@@ -412,9 +449,18 @@ class FACTORY():
         self.sld.IsReady()
         #self.hbw.HBW_Status()
 
+        self.factory_state = 'idle'
+        self.processing_thread = None
+        self.job_data = None
+
+        logger.debug("Factory Modbus Initialized")
+
     def status(self):
         factory_status = 'offline'
-        modules = [self.hbw, self.vgr, self.mpo, self.sld]
+        modules = [self.hbw, self.vgr, self.mpo] #, self.sld]
+
+        # Test if online
+        #TODO
 
         # Test if online
         #TODO
@@ -434,62 +480,115 @@ class FACTORY():
 
         return factory_status
 
+    def update(self):
+        """
+        This function should be called periodically every 1-5 seconds
+        This checks the factory state and starts jobs as needed
+        """
+        if self.factory_state == 'idle':
+            if self.job_data is not None:
+                # Start job
+                logger.info("Factory starting processing of a job")
+                self.factory_state = 'processing'
+                # Start thread
+                logger.info("Starting processing thread")
+                self.processing_thread = threading.Thread(target=self.process_order)
+                self.processing_thread.start()
 
-    def order(self, x_value, y_value):
-        self.process_order()
+        elif self.factory_state == 'processing':
+            logger.debug("Factory processing an order")
+            if not self.processing_thread.is_alive():
+                logger.info("Job completed")
+                self.factory_state = 'idle'
+
+        elif self.factory_state == 'offline':
+            logger.debug("Factory is offline")
+
+        elif self.factory_state == 'fault':
+            logger.debug("Factory in fault state")
+            self.factory_state = 'fault'
+
+        else:
+            raise Exception("Invalid factory_state set")
+
+        return self.factory_state
+
+    def order(self, slot_x, slot_y, cook_time, do_slice):
+        """ Load processing job order """
+        if self.factory_state == 'idle':
+            logger.info("Factory importing job data")
+            self.job_data = {'x': slot_x, 'y': slot_y, 'cook_time': cook_time, 'do_slice': do_slice}
+            return 0
+        else:
+            logger.error("Factory not ready. Not accepting job")
+            return 1
 
 
     def process_order(self):
+        x_value = self.job_data['x'] + 1
+        y_value = self.job_data['y'] + 1
+        cook_time = self.job_data['cook_time']
+        do_slice = self.job_data['do_slice']
+        logger.info("Factory process started")
+        logger.debug("X: %d, Y: %d", x_value, y_value)
 
-        def stage_1(self):
+        def stage_1(x_value, y_value):
             """
             Stage 1
             HBW -> VGR -> MPO also HBW return pallet
             """
-            hbw_ready_status = str(self.hbw.IsReady())
+            print("Stage 1 entered")
+            hbw_ready_status = self.hbw.IsReady()
             # Run HBW
-            if hbw_ready_status == "True":
-                print("HBW Is Ready: " + hbw_ready_status)
+            if hbw_ready_status == True:
+                print("HBW Is Ready")
                 self.hbw.StartTask1(x_value, y_value) #HBW STARTS
-                stage_1_flag = True
             else:
-                print("HBW Is Not Ready: " + hbw_ready_status)
+                print("HBW Is Not Ready")
 
             # Run VGR and HBW return
             while True:
-                hbw_ready_status = str(self.hbw.IsReady())
-                if str(self.hbw.CurrentProgress()) == "[80]":
+                hbw_ready_status = self.hbw.IsReady()
+
+                if self.hbw.CurrentProgress() == 80:
                     self.vgr.StartTask1() #VGR STARTS
-                elif hbw_ready_status == "True":
+                elif hbw_ready_status == True:
                     time.sleep(2)
                     self.hbw.StartTask2(x_value, y_value)#Return Pallet
                     break
+                time.sleep(0.1)
 
         def stage_2():
             """
             Stage 2
             """
+            print("Stage 2 entered")
             while True:
-                mpo_start_light = str(self.mpo.StartSensorStatus())
-                if mpo_start_light == "False":
+                mpo_start_light = self.mpo.StartSensorStatus()
+                if mpo_start_light == False:
+                    print("Starting MPO task")
                     time.sleep(1)
                     self.mpo.StartTask1()#Add values to change
                     break
+                time.sleep(0.1)
 
         def stage_3():
             """
             Stage 3
             """
+            print("Stage 3 entered")
             while True:
-                mpo_end_light = str(self.mpo.EndSensorStatus())
+                mpo_end_light = self.mpo.EndSensorStatus()
                 #print("stage 3 end light: "+mpo_end_light)
-                if mpo_end_light == "False":
+                if mpo_end_light == False:
                     self.sld.StartTask1()
                     break
+                time.sleep(0.1)
 
-        stage_1()
+        stage_1(x_value, y_value)
         stage_2()
         stage_3()
+        self.job_data = None # Clear job data that just completed
         return
 
 

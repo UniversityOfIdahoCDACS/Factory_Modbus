@@ -7,7 +7,7 @@ Depends on factory_inventory
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG) # sets default logging level for all modules
+logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
 class JobQueue():
     """

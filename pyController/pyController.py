@@ -43,7 +43,10 @@ logger.addHandler(ch)
 
 # reduce logging level of specific libraries
 logging.getLogger("jobQueue").setLevel(logging.DEBUG)
-logging.getLogger("paho.mqtt.client").setLevel(logging.DEBUG)
+logging.getLogger("paho.mqtt.client").setLevel(logging.INFO)
+logging.getLogger("FACTORY_MQTT").setLevel(logging.INFO)
+logging.getLogger("factoryModbus").setLevel(logging.DEBUG)
+
 
 
 #*********************************************
@@ -191,9 +194,10 @@ class ORCHASTRATOR():
         """Run the factory's update function.
            This should be called every 1-5 seconds"""
         factory_state = self.factory.update()
+        logging.info("Factory state: %s", factory_state)
 
         # If factory just finished processing
-        if factory_state == 'ready' and self.last_factory_state == 'processing':
+        if factory_state == 'idle' and self.last_factory_state == 'processing':
             # Job finished
             job_id = self.current_job[0]['job_id']
             message = f"Job {job_id} has been completed"
@@ -205,7 +209,8 @@ class ORCHASTRATOR():
             self.send_status()
 
         # If factory ready, start a job if available
-        elif factory_state == 'ready' and self.queue.has_jobs():
+        elif factory_state == 'idle' and self.queue.has_jobs():
+            logging.info("Starting job")
             self.factory_start_job()
 
         elif factory_state == 'processing':
@@ -273,9 +278,10 @@ def main():
     inventory.preset_inventory()
 
     # Setup factory object
-    if False: # Use real factory
-        #import factoryModbus
-        factory = None
+    logging.debug("Creating factory object")
+    if True: # Use real factory
+        import factoryModbus
+        factory = factoryModbus.FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
     else:
         import FactorySim2
         factory = FactorySim2.FactorySim2()
@@ -288,26 +294,23 @@ def main():
     mqtt.set_cancel_job_callback(orchastrator.cancel_job_id_callback)
     mqtt.set_cancel_order_callback(orchastrator.cancel_job_order_callback)
 
-    add_job = {'job_id': 999, 'order_id': 10999, 'color': "red", 'cook_time': 3, 'slice': True}
-    orchastrator.add_job_callback(add_job)
+    #add_job = {'job_id': 999, 'order_id': 10999, 'color': "white", 'cook_time': 3, 'slice': True}
+    #orchastrator.add_job_callback(add_job)
 
     logging.debug("Going into main loop")
     count = 0
     while True:
-        count += 2
+        count += 1
         time.sleep(1)
 
-        if count % 5 == 0:
+        if count % 2 == 0:
             orchastrator.factory_update()
             mqtt.update()
 
         if count % 15 == 0:
             orchastrator.send_status()
 
-        if count % 30 == 0:
-            orchastrator.send_inventory()
-
-        if count > 61:
+        if count > 60:
             orchastrator.send_inventory()
             count = 0
 
