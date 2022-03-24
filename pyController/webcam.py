@@ -48,7 +48,8 @@ class Webcam():
         if self.worker_thread is not None:
             self.worker_thread.join()   # Wait for thread to stop
 
-        self.cap.release()              # Release capture
+        if self.cap is not None:
+            self.cap.release()          # Release capture
 
 
     def update(self):
