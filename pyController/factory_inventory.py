@@ -19,8 +19,8 @@ class FACTORY_INVENTORY():
     # Presets inventory to a known configuration
     def preset_inventory(self):
         """Presets inventory to a known configuration """
-        self.inventory = [['red', 'empty', 'red'],
-                          ['empty', 'white', 'white'],
+        self.inventory = [['red', 'red', 'red'],
+                          ['white', 'white', 'white'],
                           ['blue', 'blue', 'blue']]
         logger.debug("Factory Inventory using preset configuration")
 

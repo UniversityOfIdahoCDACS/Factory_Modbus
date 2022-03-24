@@ -84,7 +84,7 @@ class FACTORY_MQTT():
 
     # Publish to broker
     def publish(self, topic, payload=None, qos=0, retain=False):
-        self.logger.info("Sending topic %s this payload: %s", topic, payload)
+        #self.logger.debug("Sending topic %s this payload: %s", topic, payload)
         try:
             self.client.publish(topic, payload=payload, qos=qos, retain=retain)
         except ValueError:

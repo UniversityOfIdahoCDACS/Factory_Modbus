@@ -12,6 +12,7 @@ from dotenv import dotenv_values
 import factoryJobQueue
 import factory_inventory
 import factoryMQTT
+import webcam
 
 
 #*********************************************
@@ -240,18 +241,30 @@ def main():
     inventory = factory_inventory.FACTORY_INVENTORY()
     inventory.preset_inventory()
 
+    # Setup webcam
+    if config['FAKE_WEBCAM'] == 'True':
+        logging.debug("Using fake image source")
+        my_webcam = webcam.Webcam(rate=10, mqtt=mqtt)
+        my_webcam.start()
+    else:
+        logging.debug("Using real camera")
+        my_webcam = webcam.Webcam(rate=10, mqtt=mqtt, source=0)
+        my_webcam.start()
+
+
     # Setup factory object
-    if False: # Use real factory
+    if config['FACTORY_SIM'] == 'True': # Use FactorySim2
+        import FactorySim2
+        logging.info("Using Factory sim")
+        factory = FactorySim2.FactorySim2()
+    else:
         #import factoryModbus
         factory = None
-    else:
-        import FactorySim2
-        factory = FactorySim2.FactorySim2()
 
     # Setup orchastrator object
     orchastrator = ORCHASTRATOR(mqtt=mqtt, queue=job_queue, inventory=inventory, factory=factory)
 
-    # set mqtt callbacks
+    # set mqtt orchastrator callbacks
     mqtt.set_add_job_callback(orchastrator.add_job_callback)
     mqtt.set_cancel_job_callback(orchastrator.cancel_job_id_callback)
     mqtt.set_cancel_order_callback(orchastrator.cancel_job_order_callback)
@@ -263,11 +276,15 @@ def main():
     count = 0
     while True:
         count += 2
+        try:
         time.sleep(1)
+        except KeyboardInterrupt:
+            break
 
         if count % 5 == 0:
             orchastrator.factory_update()
             mqtt.update()
+            my_webcam.update()
 
         if count % 15 == 0:
             orchastrator.send_status()
@@ -275,6 +292,13 @@ def main():
         if count > 30:
             orchastrator.send_inventory()
             count = 0
+
+    # Shutdown
+    logging.info("Shutting down gracefully")
+    my_webcam.stop()
+    factory.stop()
+    mqtt.stop()
+    
 
 
 if __name__ == '__main__':
