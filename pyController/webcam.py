@@ -13,7 +13,7 @@ import cv2 as cv
 class Webcam():
     """ Factory webcam control class """
 
-    def __init__(self, rate=10, mqtt=None, source=None):
+    def __init__(self, rate=10, mqtt=None, source='test-file'):
         self.logger = logging.getLogger("Webcam")
         self.logger.setLevel(logging.WARN) # sets default logging level for this module
 
@@ -24,7 +24,12 @@ class Webcam():
         self.source = source
 
         # Object to capture the frames
-        self.cap = cv.VideoCapture(0)
+        if source == 'test-file':
+            self.logger.warn("Using test image file as source")
+            self.cap = None
+        else:
+            self.logger.debug("Using capture source %d", source)
+            self.cap = cv.VideoCapture(0)
 
         self.logger.info("Initialized webcam")
 
@@ -59,19 +64,30 @@ class Webcam():
         wait_period = float(1 / rate)
         while not self.worker_thread_stop:
             start = time.time()
-            jpg_as_text = self.get_image()
+
+            if self.source == 'test-file':
+                jpg_as_text = self.get_fake_image()
+            else:
+                jpg_as_text = self.get_image()
 
             # self.convert_text_to_image(jpg_as_text)
 
             if len(jpg_as_text) > 10:
                 self.send_image(jpg_as_text)
+            else:
+                self.logger.warn("Image text too small. Bad picture?")
+                time.sleep(1)
 
             end = time.time()
             dt = end - start
             sleep_time = max(0, wait_period - dt)
             self.logger.debug(f"dt: {dt:.4f} | sleep time: {sleep_time:.4f} | wait period: {wait_period:.4f}")
             time.sleep(sleep_time)
-        
+
+            # Run once test
+            if rate <= 0:
+                break
+
         self.logger.info("Webcam worker thread exiting")
 
 
@@ -80,6 +96,8 @@ class Webcam():
         """ Get image from capture source """
         # Read Frame
         retval, image = self.cap.read()
+        if image is None:
+            return ""
         self.logger.debug("Image shape: %s", image.shape)
 
         # Encode frame to jpg
@@ -95,26 +113,16 @@ class Webcam():
 
 
     def get_fake_image(self):
-        # TODO
-        # Look at
-        # https://stackoverflow.com/questions/34588464/python-how-to-capture-image-from-webcam-on-click-using-opencv
+        """ Get image from jpg test file """
+        # Read image from test file
+        image = cv.imread('resources/test-image.jpg')
 
-        """ Get image from capture source """
-
-        import urllib2
-        import numpy as np
-
-        req = urllib2.urlopen('http://answers.opencv.org/upfiles/logo_2.png')
-        arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-        image = cv.imdecode(arr, -1) # 'Load it as it is'
-
-        cv.imshow('lalala', image)
-        if cv.waitKey() & 0xff == 27: quit()
+        if image is None:
+            return ""
 
         # Encode frame to jpg
         # Params doc: https://docs.opencv.org/3.4/d8/d6a/group__imgcodecs__flags.html#ga292d81be8d76901bff7988d18d2b42ac
         retval, buffer = cv.imencode('.jpg', image, params=[cv.IMWRITE_JPEG_QUALITY, 50])
-        self.logger.debug("Encoded shape: %s",buffer.shape)
 
         # Endode jpg to base64
         jpg_as_text = base64.b64encode(buffer)
@@ -137,14 +145,16 @@ class Webcam():
         """ Send image data to mqtt broker """
         # This might be handled one layer up
         if self.mqtt is not None:
-            msg = { "webcam_status" : "simulated", "image_data" : f"{data}" }
-            #msg = { "webcam_status" : "offline", "image_data" : f"Fake Data aabbccddeeffgg" }
-            #self.logger.debug(f"Webcam data: \n{data}")
+            if self.source == 'test-file':
+                msg = { "webcam_status" : "streaming", "image_data" : f"{data}" }
+            else:
+                msg = { "webcam_status" : "simulated", "image_data" : f"{data}" }
         else:
             msg = { "webcam_status" : "offline", "image_data" : f"{data}" }
-            #print(msg)
-            #self.logger.info(f"Webcam data: \n{data}")
 
+        # print msg to file
+        # with open('image.txt', 'w') as f:
+        #     f.write(str(msg))
 
         # Send to mqtt broker
         if self.mqtt is not None:

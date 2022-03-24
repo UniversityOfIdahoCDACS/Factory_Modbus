@@ -248,7 +248,7 @@ def main():
         my_webcam.start()
     else:
         logging.debug("Using real camera")
-        my_webcam = webcam.Webcam(rate=10, mqtt=mqtt)
+        my_webcam = webcam.Webcam(rate=10, mqtt=mqtt, source=0)
         my_webcam.start()
 
 

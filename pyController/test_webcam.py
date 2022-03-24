@@ -66,18 +66,24 @@ def main():
         time.sleep(1)
         mqtt.start()
 
-        my_webcam = webcam.Webcam(mqtt=mqtt)
+        my_webcam = webcam.Webcam(mqtt=mqtt, source=0)
+        # my_webcam = webcam.Webcam(mqtt=mqtt) # Source from default test file
     else:
-        my_webcam = webcam.Webcam()
+        my_webcam = webcam.Webcam(source=0)
 
-    my_webcam.start()
-    try:
-        while True:
-            time.sleep(10)
-    except KeyboardInterrupt:
-        my_webcam.stop()
+    my_webcam.worker(-1)
+    time.sleep(3)
+
+    # my_webcam.start()
+    # try:
+    #     while True:
+    #         time.sleep(10)
+    # except KeyboardInterrupt:
+    #     my_webcam.stop()
+    #     mqtt.stop()
     # my_webcam.worker(5)
 
+    mqtt.stop()
 
 if __name__ == '__main__':
     main()
