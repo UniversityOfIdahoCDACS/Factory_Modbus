@@ -198,7 +198,7 @@ class ORCHASTRATOR():
         logging.info("Factory state: %s", factory_state)
 
         # If factory just finished processing
-        if factory_state == 'idle' and self.last_factory_state == 'processing':
+        if factory_state == 'ready' and self.last_factory_state == 'processing':
             # Job finished
             job_id = self.current_job[0]['job_id']
             message = f"Job {job_id} has been completed"
@@ -210,7 +210,7 @@ class ORCHASTRATOR():
             self.send_status()
 
         # If factory ready, start a job if available
-        elif factory_state == 'idle' and self.queue.has_jobs():
+        elif factory_state == 'ready' and self.queue.has_jobs():
             logging.info("Starting job")
             self.factory_start_job()
 
