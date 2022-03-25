@@ -54,7 +54,7 @@ class MODBUS():
             response = self.client.read_holding_registers(addr, 1)
         except ValueError:
             logger.error("Value error occured while readying reg %s", addr)
-            responce = [0] # Not great but it prevents the logic from crashing
+            response = [0] # Not great but it prevents the logic from crashing
         #print (f"Modbus read_reg responce: {response}, type: {type(response)}")
 
         if response is None:
@@ -64,10 +64,9 @@ class MODBUS():
                 response = self.client.read_holding_registers(addr, 1)
             except ValueError:
                 logger.error("Value error occured while readying reg %s", addr)
-            
+
             if response is None:
                 response = [0]
-            
 
         try:
             return_val = int(response[0])
@@ -229,8 +228,7 @@ class VGR():
         return self.status_ready.read()
 
     def IsFault(self):
-        value = self.fault_code.read()
-        if self.fault_code.read() > 0: 
+        if self.fault_code.read() > 0:
             return True
         else:
             return False
@@ -429,6 +427,41 @@ class SSC():
         print("************************")
 
 #*****************************
+#*            SSC_Webcam            *
+#*****************************
+class SSC_Webcam():
+    def __init__(self, modbus):
+        self.Task1          = BIT(000, modbus) #go
+        self.status_manual  = BIT(000, modbus) #manual control mode
+        self.status_reset   = BIT(000, modbus) #reset
+        self.target_pan     = REGISTER(000, modbus) #pan
+        self.target_tilt    = REGISTER(000, modbus) #tilt
+
+        # point table
+        self.points = [(100, 100), # Pan, Tilt
+                       (200, 200),
+                       (300, 300),
+                       (400, 400),
+                       (500, 500),
+                       (600, 600)
+                       ]
+
+    def IsReady(self):
+        return True
+
+    def reset():
+        """ Go to first starting position """
+        self.target_pan(self.points[0][0])
+        self.target_tilt(self.points[0][1])
+
+    def go_to_point(self, point):
+        """ Move webcam to point's (pan, tilt) value """
+        print("Moving webcam to point #%d with value %s" % (point, str(self.points[point])))
+        self.target_pan(self.points[point][0])
+        self.target_tilt(self.points[point][1])
+
+
+#*****************************
 #*         FACTORY           *
 #*****************************
 class FACTORY():
@@ -440,7 +473,9 @@ class FACTORY():
         self.mpo = MPO(self.mb)
         self.sld = SLD(self.mb)
         self.ssc = SSC(self.mb)
+        self.ssc_webcam = SSC_Webcam(self.mb)
 
+        logger.debug("Getting initial statuses...")
         #check ready status
         self.hbw.IsReady()
         self.vgr.IsReady()
@@ -538,6 +573,7 @@ class FACTORY():
             HBW -> VGR -> MPO also HBW return pallet
             """
             print("Stage 1 entered")
+            self.ssc_webcam.go_to_point(1)
             hbw_ready_status = self.hbw.IsReady()
             # Run HBW
             if hbw_ready_status == True:
@@ -552,6 +588,7 @@ class FACTORY():
 
                 if self.hbw.CurrentProgress() == 80:
                     self.vgr.StartTask1() #VGR STARTS
+                    self.ssc_webcam.go_to_point(2)
                 elif hbw_ready_status == True:
                     time.sleep(2)
                     self.hbw.StartTask2(x_value, y_value)#Return Pallet
@@ -563,6 +600,7 @@ class FACTORY():
             Stage 2
             """
             print("Stage 2 entered")
+            self.ssc_webcam.go_to_point(3)
             while True:
                 mpo_start_light = self.mpo.StartSensorStatus()
                 if mpo_start_light == False:
@@ -577,10 +615,12 @@ class FACTORY():
             Stage 3
             """
             print("Stage 3 entered")
+            self.ssc_webcam.go_to_point(4)
             while True:
                 mpo_end_light = self.mpo.EndSensorStatus()
                 #print("stage 3 end light: "+mpo_end_light)
                 if mpo_end_light == False:
+                    self.ssc_webcam.go_to_point(5)
                     self.sld.StartTask1()
                     break
                 time.sleep(0.1)
