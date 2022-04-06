@@ -39,12 +39,12 @@ def load_env():
 
     return loaded_config
 
-class FACTORY_MQTT():
+class Factory_MQTT():
     # Doc: https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
 
     def __init__(self, URL=None, PORT=None, CLIENT_ID="Unknown Client", TOPIC_SUB=None):
         # Logger
-        self.logger = logging.getLogger('FACTORY_MQTT')
+        self.logger = logging.getLogger('Factory_MQTT')
         self.logger.setLevel(logging.DEBUG)
         self.logger.debug("Initializing MQTT Client")
 
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     logger.info("Starting factory MQTT")
     config = load_env()
 
-    m = FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
+    m = Factory_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
                      TOPIC_SUB=config['MQTT_SUBSCRIBE'])
 
     m.connect()

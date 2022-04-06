@@ -8,10 +8,9 @@ from logging.handlers import RotatingFileHandler
 from dotenv import dotenv_values
 
 # factory modules import
-#import factoryModbus
-import factoryJobQueue
-import factory_inventory
-import factoryMQTT
+from job_queue import JobQueue
+from inventory import Inventory
+from mqtt import Factory_MQTT
 import webcam
 from factory.factory import FACTORY             # Real factory
 from factory.factory_sim2 import FactorySim2    # Simulated factory
@@ -47,8 +46,8 @@ logger.addHandler(ch)
 # reduce logging level of specific libraries
 logging.getLogger("jobQueue").setLevel(logging.DEBUG)
 logging.getLogger("paho.mqtt.client").setLevel(logging.INFO)
-logging.getLogger("FACTORY_MQTT").setLevel(logging.INFO)
-logging.getLogger("factoryModbus").setLevel(logging.DEBUG)
+logging.getLogger("Factory_MQTT").setLevel(logging.INFO)
+logging.getLogger("Factory").setLevel(logging.DEBUG)
 
 
 
@@ -77,7 +76,7 @@ def load_env():
 
 
 
-class ORCHASTRATOR():
+class Orchastrator():
     def __init__(self, mqtt=None, queue=None, inventory=None, factory=None):
         if queue is None:
             raise Exception("queue not specified")
@@ -267,7 +266,7 @@ def main():
     config = load_env()
 
     logging.info("Starting factory MQTT")
-    mqtt = factoryMQTT.FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
+    mqtt = Factory_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
                                     CLIENT_ID=config['MQTT_CLIENT_ID'], TOPIC_SUB=config['MQTT_SUBSCRIBE'])
     mqtt.connect()
     time.sleep(1)
@@ -276,8 +275,8 @@ def main():
     logging.debug("Creating Job and orchastrator")
 
     # Setup Job Queue and Inventory objects
-    job_queue = factoryJobQueue.JobQueue()
-    inventory = factory_inventory.FACTORY_INVENTORY()
+    job_queue = JobQueue()
+    inventory = Inventory()
     inventory.preset_inventory()
 
     # Setup factory object
@@ -303,7 +302,7 @@ def main():
 
 
     # Setup orchastrator object
-    orchastrator = ORCHASTRATOR(mqtt=mqtt, queue=job_queue, inventory=inventory, factory=factory)
+    orchastrator = Orchastrator(mqtt=mqtt, queue=job_queue, inventory=inventory, factory=factory)
 
     # set mqtt orchastrator callbacks
     mqtt.set_add_job_callback(orchastrator.add_job_callback)
@@ -339,7 +338,6 @@ def main():
     my_webcam.stop()
     factory.stop()
     mqtt.stop()
-    
 
 
 if __name__ == '__main__':

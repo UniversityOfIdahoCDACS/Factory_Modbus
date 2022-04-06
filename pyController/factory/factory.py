@@ -5,7 +5,7 @@ import logging
 import threading
 from pyModbusTCP.client import ModbusClient
 
-logger = logging.getLogger("factoryModbus")
+logger = logging.getLogger("Factory")
 logger.setLevel(logging.DEBUG) # sets default logging level for module
 
 

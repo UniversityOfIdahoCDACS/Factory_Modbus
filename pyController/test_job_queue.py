@@ -2,7 +2,8 @@
 """This module tests the runability of jobQueue.py"""
 
 import logging
-import factoryJobQueue
+from job_queue import JobQueue
+from inventory import Inventory
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG) # sets default logging level for all modules
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     logger.info("Starting")
     logger.debug("Debug level")
 
-    q = factoryJobQueue.JobQueue()
+    q = JobQueue()
 
     order = {'job_id': 123, 'order_id': 1, 'color': 'red', 'cook_time': 12, 'slice': True}
     q.add_job(order)
@@ -52,10 +53,11 @@ if __name__ == '__main__':
 
 
     logger.info("Testing find next available job\n")
-    import factory_inventory
+
+    # Queue pop inventory testing
     logging.getLogger("Factory_Inventory").setLevel(logging.INFO)
 
-    inv = factory_inventory.FACTORY_INVENTORY()
+    inv = Inventory()
     inv.preset_inventory()
 
     job = q.next_available_job(inv)

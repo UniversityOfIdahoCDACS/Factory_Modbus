@@ -7,6 +7,7 @@ import os
 import sys
 
 from dotenv import dotenv_values
+from mqtt import Factory_MQTT
 import webcam
 
 
@@ -50,17 +51,16 @@ def main():
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
-    logging.getLogger('FACTORY_MQTT').setLevel(logging.ERROR)
+    logging.getLogger('Factory_MQTT').setLevel(logging.ERROR)
 
     logger.info("test webcam started")
 
     # MQTT
     if True:
         config = load_env()
-        import factoryMQTT
 
         logger.info("Starting factory MQTT")
-        mqtt = factoryMQTT.FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
+        mqtt = Factory_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
                                         CLIENT_ID=config['MQTT_CLIENT_ID'], TOPIC_SUB=config['MQTT_SUBSCRIBE'])
         mqtt.connect()
         time.sleep(1)
