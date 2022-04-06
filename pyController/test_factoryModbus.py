@@ -4,7 +4,7 @@ import sys
 import logging
 from time import sleep
 from dotenv import dotenv_values
-import factoryModbus
+from factory.factory import FACTORY
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.DEBUG) # sets default logging level for all modules
@@ -44,7 +44,7 @@ def load_env():
 
 def main():
     config = load_env()
-    f = factoryModbus.FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
+    f = FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
     logger.info("Initialized")
     print("P Initialized")
 

@@ -13,6 +13,8 @@ import factoryJobQueue
 import factory_inventory
 import factoryMQTT
 import webcam
+from factory.factory import FACTORY             # Real factory
+from factory.factory_sim2 import FactorySim2    # Simulated factory
 
 
 #*********************************************
@@ -281,13 +283,11 @@ def main():
     # Setup factory object
     logging.debug("Creating factory object")
     if config['FACTORY_SIM'] == 'True': # Use FactorySim2
-        import FactorySim2
         logging.info("Using Factory sim")
-        factory = FactorySim2.FactorySim2()
+        factory = FactorySim2()
     else:
-        import factoryModbus
         logging.info("Using Factory Modbus")
-        factory = factoryModbus.FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
+        factory = FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
     
     
     # Setup webcam
