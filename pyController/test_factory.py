@@ -1,9 +1,10 @@
 
-import os
-import sys
+"""This module tests the runability of factory.py"""
+
 import logging
 from time import sleep
-from dotenv import dotenv_values
+
+import utilities
 from factory.factory import FACTORY
 
 logger = logging.getLogger(__file__)
@@ -19,31 +20,9 @@ ch.setLevel(logging.DEBUG)     # set logging level for console
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
-#*********************************************
-#* * * * * * * * * Load .env * * * * * * * * *
-#*********************************************
-def load_env():
-    # Find script directory
-    envLoc = os.path.dirname(os.path.realpath(__file__)) + "/.env"
-    # Test if exist then import .env
-    if not os.path.exists(envLoc):
-        logging.error(".env file not found")
-        logging.debug("envLoc value: %r", envLoc)
-        sys.exit(1)
-    try:
-        loaded_config = dotenv_values(envLoc) # loads .env file in current directoy
-    except Exception as e:
-        logging.error("Error loading .env file %s", e)
-        sys.exit(1)
-
-    # Environment debug
-    for item in loaded_config:
-        logging.debug("Item: %s\tValue: %s", item, loaded_config[item])
-
-    return loaded_config
 
 def main():
-    config = load_env()
+    config = utilities.load_env()
     f = FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
     logger.info("Initialized")
     print("P Initialized")

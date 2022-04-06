@@ -4,40 +4,16 @@ import logging
 import time
 import json
 import sys
-import os
 import socket       # Used for exception handling
 import ssl          # Used for MQTT TLS connection
 import paho.mqtt.client as mqtt
-from dotenv import dotenv_values
+import utilities
 
 #*********************************************
 #* * * * * * * * * Logger Setup * * * * * * * *
 #*********************************************
 # Created in Class
 
-
-#*********************************************
-#* * * * * * * * * Load .env * * * * * * * * *
-#*********************************************
-def load_env():
-    # Find script directory
-    envLoc = os.path.dirname(os.path.realpath(__file__)) + "/.env"
-    # Test if exist then import .env
-    if not os.path.exists(envLoc):
-        logging.error(".env file not found")
-        logging.debug("envLoc value: %r", envLoc)
-        sys.exit(1)
-    try:
-        loaded_config = dotenv_values(envLoc) # loads .env file in current directoy
-    except Exception as e:
-        logging.error("Error loading .env file %s", e)
-        sys.exit(1)
-
-    # Environment debug
-    for item in loaded_config:
-        logging.debug("Item: %s\tValue: %s", item, loaded_config[item])
-
-    return loaded_config
 
 class Factory_MQTT():
     # Doc: https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
@@ -186,7 +162,7 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG) # sets default logging level for all modules
 
     logger.info("Starting factory MQTT")
-    config = load_env()
+    config = utilities.load_env()
 
     m = Factory_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
                      TOPIC_SUB=config['MQTT_SUBSCRIBE'])

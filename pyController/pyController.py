@@ -1,13 +1,11 @@
 
 import time
 import json
-import sys
-import os
 import logging
 from logging.handlers import RotatingFileHandler
-from dotenv import dotenv_values
 
 # factory modules import
+import utilities
 from job_queue import JobQueue
 from inventory import Inventory
 from mqtt import Factory_MQTT
@@ -48,32 +46,6 @@ logging.getLogger("jobQueue").setLevel(logging.DEBUG)
 logging.getLogger("paho.mqtt.client").setLevel(logging.INFO)
 logging.getLogger("Factory_MQTT").setLevel(logging.INFO)
 logging.getLogger("Factory").setLevel(logging.DEBUG)
-
-
-
-#*********************************************
-#* * * * * * * * * Load .env * * * * * * * * *
-#*********************************************
-def load_env():
-    # Find script directory
-    envLoc = os.path.dirname(os.path.realpath(__file__)) + "/.env"
-    # Test if exist then import .env
-    if not os.path.exists(envLoc):
-        logging.error(".env file not found")
-        logging.debug("envLoc value: %r", envLoc)
-        sys.exit(1)
-    try:
-        loaded_config = dotenv_values(envLoc) # loads .env file in current directoy
-    except Exception as e:
-        logging.error("Error loading .env file %s", e)
-        sys.exit(1)
-
-    # Environment debug
-    for item in loaded_config:
-        logging.debug("Item: %s\tValue: %s", item, loaded_config[item])
-
-    return loaded_config
-
 
 
 class Orchastrator():
@@ -263,7 +235,8 @@ def main():
 
     logging.info("Starting factory python controller")
 
-    config = load_env()
+    # Get environment configs
+    config = utilities.load_env()
 
     logging.info("Starting factory MQTT")
     mqtt = Factory_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
