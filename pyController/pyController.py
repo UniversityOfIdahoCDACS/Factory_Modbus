@@ -235,6 +235,9 @@ def main():
 
     logging.info("Starting factory python controller")
 
+    # Signal handler
+    killer = utilities.GracefulKiller()
+
     # Get environment configs
     config = utilities.load_env()
 
@@ -287,7 +290,7 @@ def main():
 
     logging.debug("Going into main loop")
     count = 0
-    while True:
+    while not killer.kill_now:
         try:
             count += 1
             time.sleep(1)

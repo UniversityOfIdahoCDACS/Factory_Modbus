@@ -25,7 +25,7 @@ class Webcam():
 
         # Object to capture the frames
         if source == 'test-file':
-            self.logger.warn("Using test image file as source")
+            self.logger.warning("Using test image file as source")
             self.cap = None
         else:
             self.logger.debug("Using capture source %d", source)
@@ -63,7 +63,10 @@ class Webcam():
     def worker(self, rate):
         """ Takes a picture, encodes, then sends the image to mqtt """
         wait_period = float(1 / rate)
-        while not self.worker_thread_stop:
+
+        main_thread = threading.main_thread() # To check if parent thread died
+
+        while main_thread.is_alive() and not self.worker_thread_stop:
             start = time.time()
 
             if self.source == 'test-file':
@@ -76,7 +79,7 @@ class Webcam():
             if len(jpg_as_text) > 10:
                 self.send_image(jpg_as_text)
             else:
-                self.logger.warn("Image text too small. Bad picture?")
+                self.logger.warning("Image text too small. Bad picture?")
                 time.sleep(1)
 
             end = time.time()
