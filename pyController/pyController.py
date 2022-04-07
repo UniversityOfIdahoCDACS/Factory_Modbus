@@ -1,5 +1,6 @@
 
 import time
+import os
 import json
 import logging
 from logging.handlers import RotatingFileHandler
@@ -28,7 +29,8 @@ logger.setLevel(logging.DEBUG) # sets default logging level for all modules
 formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] - %(message)s')
 
 # Logger: create rotating file handler
-rfh = RotatingFileHandler('app_rot.log')
+log_file_path = os.path.dirname(os.path.realpath(__file__)) + "/app_rot.log"
+rfh = RotatingFileHandler(log_file_path)
 rfh.maxBytes = 1024*1024          # maximum size of a log before being rotated
 rfh.backupCount = 2               # how many rotated files to keep
 rfh.setFormatter(formatter)     # set format

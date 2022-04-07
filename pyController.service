@@ -17,9 +17,8 @@ Environment=PYTHONUNBUFFERED=1
 # Automatically restart the service if it crashes
 Restart=on-failure
 #Restart=no
-WatchdogSec=30s
-RestartSec=5s
-WatchdogSec=62s
+RestartSec=5s           # Time to sleep before restarting the service
+
 TimeoutStopSec=20s
 
 # "Units which are started more than burst times within an interval time interval are not permitted to start any more."  ~systemd.unit doc
@@ -33,6 +32,7 @@ Group=factory
 
 # Our service will notify systemd once it is up and running
 Type=simple
+#WatchdogSec=30s        # for type notify services
 
 [Install]
 # Tell systemd to automatically start this service when the system boots when enabled
