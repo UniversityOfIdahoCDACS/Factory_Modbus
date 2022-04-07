@@ -1,0 +1,39 @@
+# https://www.freedesktop.org/software/systemd/man/systemd.service.html
+
+# systemd unit file
+[Unit]
+# Human readable name of the unit. Updated in override file
+Description=Mini-Factory 4.0 Controller
+After=multi-user.target
+
+[Service]
+# Command to execute when the service is started. Added in override file
+ExecStart=/usr/bin/python3 /home/factory/Mini-Factory-Python-Controller/pyController/test_factory_sim2.py
+
+# Disable Python's buffering of STDOUT and STDERR, so that output from the
+# service shows up immediately in systemd's logs
+Environment=PYTHONUNBUFFERED=1
+
+# Automatically restart the service if it crashes
+Restart=on-failure
+#Restart=no
+WatchdogSec=30s
+RestartSec=5s
+WatchdogSec=62s
+TimeoutStopSec=20s
+
+# "Units which are started more than burst times within an interval time interval are not permitted to start any more."  ~systemd.unit doc
+StartLimitInterval=1min
+StartLimitBurst=10
+StartLimitAction=none
+
+# Use a dedicated user to run our service. Added in override file
+User=factory
+Group=factory
+
+# Our service will notify systemd once it is up and running
+Type=simple
+
+[Install]
+# Tell systemd to automatically start this service when the system boots when enabled
+WantedBy=multi-user.target
