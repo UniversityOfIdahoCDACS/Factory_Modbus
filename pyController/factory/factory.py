@@ -5,7 +5,7 @@ import logging
 import threading
 from pyModbusTCP.client import ModbusClient
 
-logger = logging.getLogger("factoryModbus")
+logger = logging.getLogger("Factory")
 logger.setLevel(logging.DEBUG) # sets default logging level for module
 
 
@@ -449,7 +449,7 @@ class FACTORY():
         self.sld.IsReady()
         #self.hbw.HBW_Status()
 
-        self.factory_state = 'idle'
+        self.factory_state = 'ready'
         self.processing_thread = None
         self.job_data = None
 
@@ -472,7 +472,7 @@ class FACTORY():
                 return factory_status
 
         # If no faults, test for all ready
-        factory_status = 'idle'
+        factory_status = 'ready'
         for module in modules:
             if not module.IsReady():
                 factory_status = 'running'
@@ -485,7 +485,7 @@ class FACTORY():
         This function should be called periodically every 1-5 seconds
         This checks the factory state and starts jobs as needed
         """
-        if self.factory_state == 'idle':
+        if self.factory_state == 'ready':
             if self.job_data is not None:
                 # Start job
                 logger.info("Factory starting processing of a job")
@@ -499,7 +499,7 @@ class FACTORY():
             logger.debug("Factory processing an order")
             if not self.processing_thread.is_alive():
                 logger.info("Job completed")
-                self.factory_state = 'idle'
+                self.factory_state = 'ready'
 
         elif self.factory_state == 'offline':
             logger.debug("Factory is offline")
@@ -515,7 +515,7 @@ class FACTORY():
 
     def order(self, slot_x, slot_y, cook_time, do_slice):
         """ Load processing job order """
-        if self.factory_state == 'idle':
+        if self.factory_state == 'ready':
             logger.info("Factory importing job data")
             self.job_data = {'x': slot_x, 'y': slot_y, 'cook_time': cook_time, 'do_slice': do_slice}
             return 0

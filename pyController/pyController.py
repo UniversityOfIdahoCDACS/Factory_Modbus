@@ -1,18 +1,17 @@
 
 import time
 import json
-import sys
-import os
 import logging
 from logging.handlers import RotatingFileHandler
-from dotenv import dotenv_values
 
 # factory modules import
-#import factoryModbus
-import factoryJobQueue
-import factory_inventory
-import factoryMQTT
+import utilities
+from job_queue import JobQueue
+from inventory import Inventory
+from mqtt import Factory_MQTT
 import webcam
+from factory.factory import FACTORY             # Real factory
+from factory.factory_sim2 import FactorySim2    # Simulated factory
 
 
 #*********************************************
@@ -45,37 +44,11 @@ logger.addHandler(ch)
 # reduce logging level of specific libraries
 logging.getLogger("jobQueue").setLevel(logging.DEBUG)
 logging.getLogger("paho.mqtt.client").setLevel(logging.INFO)
-logging.getLogger("FACTORY_MQTT").setLevel(logging.INFO)
-logging.getLogger("factoryModbus").setLevel(logging.DEBUG)
+logging.getLogger("Factory_MQTT").setLevel(logging.INFO)
+logging.getLogger("Factory").setLevel(logging.DEBUG)
 
 
-
-#*********************************************
-#* * * * * * * * * Load .env * * * * * * * * *
-#*********************************************
-def load_env():
-    # Find script directory
-    envLoc = os.path.dirname(os.path.realpath(__file__)) + "/.env"
-    # Test if exist then import .env
-    if not os.path.exists(envLoc):
-        logging.error(".env file not found")
-        logging.debug("envLoc value: %r", envLoc)
-        sys.exit(1)
-    try:
-        loaded_config = dotenv_values(envLoc) # loads .env file in current directoy
-    except Exception as e:
-        logging.error("Error loading .env file %s", e)
-        sys.exit(1)
-
-    # Environment debug
-    for item in loaded_config:
-        logging.debug("Item: %s\tValue: %s", item, loaded_config[item])
-
-    return loaded_config
-
-
-
-class ORCHASTRATOR():
+class Orchastrator():
     def __init__(self, mqtt=None, queue=None, inventory=None, factory=None):
         if queue is None:
             raise Exception("queue not specified")
@@ -198,7 +171,7 @@ class ORCHASTRATOR():
         logging.info("Factory state: %s", factory_state)
 
         # If factory just finished processing
-        if factory_state == 'idle' and self.last_factory_state == 'processing':
+        if factory_state == 'ready' and self.last_factory_state == 'processing':
             # Job finished
             job_id = self.current_job[0]['job_id']
             message = f"Job {job_id} has been completed"
@@ -210,7 +183,7 @@ class ORCHASTRATOR():
             self.send_status()
 
         # If factory ready, start a job if available
-        elif factory_state == 'idle' and self.queue.has_jobs():
+        elif factory_state == 'ready' and self.queue.has_jobs():
             logging.info("Starting job")
             self.factory_start_job()
 
@@ -262,10 +235,11 @@ def main():
 
     logging.info("Starting factory python controller")
 
-    config = load_env()
+    # Get environment configs
+    config = utilities.load_env()
 
     logging.info("Starting factory MQTT")
-    mqtt = factoryMQTT.FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
+    mqtt = Factory_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
                                     CLIENT_ID=config['MQTT_CLIENT_ID'], TOPIC_SUB=config['MQTT_SUBSCRIBE'])
     mqtt.connect()
     time.sleep(1)
@@ -274,20 +248,18 @@ def main():
     logging.debug("Creating Job and orchastrator")
 
     # Setup Job Queue and Inventory objects
-    job_queue = factoryJobQueue.JobQueue()
-    inventory = factory_inventory.FACTORY_INVENTORY()
+    job_queue = JobQueue()
+    inventory = Inventory()
     inventory.preset_inventory()
 
     # Setup factory object
     logging.debug("Creating factory object")
     if config['FACTORY_SIM'] == 'True': # Use FactorySim2
-        import FactorySim2
         logging.info("Using Factory sim")
-        factory = FactorySim2.FactorySim2()
+        factory = FactorySim2()
     else:
-        import factoryModbus
         logging.info("Using Factory Modbus")
-        factory = factoryModbus.FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
+        factory = FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
     
     
     # Setup webcam
@@ -303,7 +275,7 @@ def main():
 
 
     # Setup orchastrator object
-    orchastrator = ORCHASTRATOR(mqtt=mqtt, queue=job_queue, inventory=inventory, factory=factory)
+    orchastrator = Orchastrator(mqtt=mqtt, queue=job_queue, inventory=inventory, factory=factory)
 
     # set mqtt orchastrator callbacks
     mqtt.set_add_job_callback(orchastrator.add_job_callback)
@@ -339,7 +311,6 @@ def main():
     my_webcam.stop()
     factory.stop()
     mqtt.stop()
-    
 
 
 if __name__ == '__main__':

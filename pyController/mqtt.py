@@ -4,11 +4,10 @@ import logging
 import time
 import json
 import sys
-import os
 import socket       # Used for exception handling
 import ssl          # Used for MQTT TLS connection
 import paho.mqtt.client as mqtt
-from dotenv import dotenv_values
+import utilities
 
 #*********************************************
 #* * * * * * * * * Logger Setup * * * * * * * *
@@ -16,35 +15,12 @@ from dotenv import dotenv_values
 # Created in Class
 
 
-#*********************************************
-#* * * * * * * * * Load .env * * * * * * * * *
-#*********************************************
-def load_env():
-    # Find script directory
-    envLoc = os.path.dirname(os.path.realpath(__file__)) + "/.env"
-    # Test if exist then import .env
-    if not os.path.exists(envLoc):
-        logging.error(".env file not found")
-        logging.debug("envLoc value: %r", envLoc)
-        sys.exit(1)
-    try:
-        loaded_config = dotenv_values(envLoc) # loads .env file in current directoy
-    except Exception as e:
-        logging.error("Error loading .env file %s", e)
-        sys.exit(1)
-
-    # Environment debug
-    for item in loaded_config:
-        logging.debug("Item: %s\tValue: %s", item, loaded_config[item])
-
-    return loaded_config
-
-class FACTORY_MQTT():
+class Factory_MQTT():
     # Doc: https://www.eclipse.org/paho/index.php?page=clients/python/docs/index.php
 
     def __init__(self, URL=None, PORT=None, CLIENT_ID="Unknown Client", TOPIC_SUB=None):
         # Logger
-        self.logger = logging.getLogger('FACTORY_MQTT')
+        self.logger = logging.getLogger('Factory_MQTT')
         self.logger.setLevel(logging.DEBUG)
         self.logger.debug("Initializing MQTT Client")
 
@@ -186,9 +162,9 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG) # sets default logging level for all modules
 
     logger.info("Starting factory MQTT")
-    config = load_env()
+    config = utilities.load_env()
 
-    m = FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
+    m = Factory_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']), CLIENT_ID=config['MQTT_CLIENT_ID'],
                      TOPIC_SUB=config['MQTT_SUBSCRIBE'])
 
     m.connect()

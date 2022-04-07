@@ -3,7 +3,7 @@
 
 import logging
 from time import sleep
-import FactorySim2
+from factory.factory_sim2 import FactorySim2
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG) # sets default logging level for module
@@ -22,7 +22,7 @@ def main():
 
     logging.getLogger('Factory_Sim2').setLevel(logging.DEBUG)
 
-    fs = FactorySim2.FactorySim2()
+    fs = FactorySim2()
     logger.info("Factory Status: %s", fs.status())
 
     fs.order(1, 2, 3, 4)
