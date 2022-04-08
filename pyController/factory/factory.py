@@ -432,9 +432,9 @@ class SSC():
 #*****************************
 class SSC_Webcam():
     def __init__(self, modbus):
-        self.Task1          = BIT(000, modbus) #go
-        self.status_manual  = BIT(000, modbus) #manual control mode
-        self.status_reset   = BIT(000, modbus) #reset
+        self.reset          = BIT(600, modbus) #reset
+        self.Task1          = BIT(601, modbus) #Start routine
+
         self.target_pan     = REGISTER(000, modbus) #pan
         self.target_tilt    = REGISTER(000, modbus) #tilt
 
@@ -450,10 +450,17 @@ class SSC_Webcam():
     def IsReady(self):
         return True
 
-    def reset():
+    def reset(self):
         """ Go to first starting position """
-        self.target_pan(self.points[0][0])
-        self.target_tilt(self.points[0][1])
+        # self.target_pan(self.points[0][0])
+        # self.target_tilt(self.points[0][1])
+        self.reset.set()
+        self.reset.clear()
+    
+    def StartTask1(self):
+        """ Execute Task 1 """
+        self.Task1.set()
+        self.Task1.clear()
 
     def go_to_point(self, point):
         """ Move webcam to point's (pan, tilt) value """
