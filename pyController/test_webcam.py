@@ -3,35 +3,10 @@
 
 import logging
 import time
-import os
-import sys
 
-from dotenv import dotenv_values
+import utilities
+from mqtt import Factory_MQTT
 import webcam
-
-
-#*********************************************
-#* * * * * * * * * Load .env * * * * * * * * *
-#*********************************************
-def load_env():
-    # Find script directory
-    envLoc = os.path.dirname(os.path.realpath(__file__)) + "/.env"
-    # Test if exist then import .env
-    if not os.path.exists(envLoc):
-        logging.error(".env file not found")
-        logging.debug("envLoc value: %r", envLoc)
-        sys.exit(1)
-    try:
-        loaded_config = dotenv_values(envLoc) # loads .env file in current directoy
-    except Exception as e:
-        logging.error("Error loading .env file %s", e)
-        sys.exit(1)
-
-    # Environment debug
-    for item in loaded_config:
-        logging.debug("Item: %s\tValue: %s", item, loaded_config[item])
-
-    return loaded_config
 
 
 logger = logging.getLogger()
@@ -50,17 +25,17 @@ def main():
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
-    logging.getLogger('FACTORY_MQTT').setLevel(logging.ERROR)
+    logging.getLogger('Factory_MQTT').setLevel(logging.ERROR)
 
     logger.info("test webcam started")
 
     # MQTT
     if True:
-        config = load_env()
-        import factoryMQTT
+        # Get environment configs
+        config = utilities.load_env()
 
         logger.info("Starting factory MQTT")
-        mqtt = factoryMQTT.FACTORY_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
+        mqtt = Factory_MQTT(URL=config['MQTT_BROKER_URL'], PORT=int(config['MQTT_PORT']),
                                         CLIENT_ID=config['MQTT_CLIENT_ID'], TOPIC_SUB=config['MQTT_SUBSCRIBE'])
         mqtt.connect()
         time.sleep(1)

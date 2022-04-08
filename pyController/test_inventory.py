@@ -1,7 +1,7 @@
 """This module tests the runability of factory_inventory.py"""
 
 import logging
-import factory_inventory
+from inventory import Inventory
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG) # sets default logging level for all modules
@@ -20,7 +20,7 @@ logger.addHandler(ch)
 logging.getLogger("inventoryHandler").setLevel(logging.DEBUG)
 
 if __name__ == "__main__":
-    i = factory_inventory.FACTORY_INVENTORY()
+    i = Inventory()
     i.preset_inventory()
 
     logger.info("Inventory: %s", i.get_inventory())

@@ -5,7 +5,7 @@ import logging
 import threading
 from pyModbusTCP.client import ModbusClient
 
-logger = logging.getLogger("factoryModbus")
+logger = logging.getLogger("Factory")
 logger.setLevel(logging.DEBUG) # sets default logging level for module
 
 
@@ -20,6 +20,7 @@ class MODBUS():
         self.client = ModbusClient(host=ip, port=port, unit_id=1, auto_open=True)  # Always connect
         self.ip = ip
         self.port = port
+        self.connection_check()
 
     def __del__(self):
         self.client.close()
@@ -33,9 +34,9 @@ class MODBUS():
 
     def read_coil(self, addr):
         self.connection_check()
-        logger.debug("Reading coil %s", addr)
         try:
             val = self.client.read_coils(addr, 1)
+            #logger.debug("Reading coil %s, Val: %s", addr, str(val))
         except ValueError:
             logger.error("Value error occured while readying coil %s", addr)
             return 0

@@ -2,10 +2,10 @@
 """This module tests the runability of pyController.py"""
 
 import logging
-import factoryJobQueue
-import factory_inventory
-import pyController
-
+from job_queue import JobQueue
+from inventory import Inventory
+from factory.factory_sim2 import FactorySim2    # Simulated factory
+from pyController import Orchastrator
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.DEBUG) # sets default logging level for all modules
@@ -17,20 +17,15 @@ def main():
     logger.debug("Creating Job and orchastrator")
 
     # Setup Job Queue and Inventory objects
-    job_queue = factoryJobQueue.JobQueue()
-    inventory = factory_inventory.FACTORY_INVENTORY()
+    job_queue = JobQueue()
+    inventory = Inventory()
     inventory.preset_inventory()
 
-    # Setup factory object
-    if False: # Use real factory
-        #import factoryModbus
-        factory = None
-    else:
-        import FactorySim2
-        factory = FactorySim2.FactorySim2()
+    # Setup factory sim object
+    factory = FactorySim2()
 
     # Setup orchastrator object
-    orchastrator = pyController.ORCHASTRATOR(mqtt=None, queue=job_queue, inventory=inventory, factory=factory)
+    orchastrator = Orchastrator(mqtt=None, queue=job_queue, inventory=inventory, factory=factory)
 
     if True:
         logger.info("Running Tests")

@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger('Factory_Inventory')
 logger.setLevel(logging.DEBUG) # sets default logging level for all modules
 
-class FACTORY_INVENTORY():
+class Inventory():
     '''
     x : row
     y : column
