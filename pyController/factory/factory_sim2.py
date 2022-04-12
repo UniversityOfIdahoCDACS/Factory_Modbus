@@ -81,8 +81,10 @@ class FactorySim2():
 
         def wait(self, sleep_time):
             """ Wait function that monitors a thread stop condition """
-            for i in range(sleep_time):
-                if self.processing_thread_stop:
+            main_thread = threading.main_thread()
+
+            for _ in range(sleep_time):
+                if not main_thread.is_alive() or self.processing_thread_stop:
                     logger.info("FactorySim thread exiting")
                     sys.exit(0)
                 else:
