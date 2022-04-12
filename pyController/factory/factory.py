@@ -41,6 +41,15 @@ class MODBUS():
             logger.error("Value error occured while readying coil %s", addr)
             return 0
 
+        # val validation & conversion
+        if val == "[True]":
+            return True
+        elif val == "[False]":
+            return False
+        else:
+            print("NOT a bool value while readying coil %s" % addr)
+            return False
+
         return val
 
     def write_coil(self, addr, value):
@@ -65,10 +74,10 @@ class MODBUS():
                 response = self.client.read_holding_registers(addr, 1)
             except ValueError:
                 logger.error("Value error occured while readying reg %s", addr)
-            
+
             if response is None:
                 response = [0]
-            
+
 
         try:
             return_val = int(response[0])
@@ -117,13 +126,7 @@ class BIT():
     def read(self):
         #print ("BIT Val: %r" % self.value)
         self.value = str(self.mb.read_coil(self.addr))
-        if self.value == "[True]":
-            return True
-        elif self.value == "[False]":
-            return False
-        else:
-            print("NOT a bool value")
-            return self.value
+        return self.value
 
 #***********************************
 #*              REGISTER           *
