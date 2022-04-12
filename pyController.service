@@ -8,7 +8,7 @@ After=multi-user.target
 
 [Service]
 # Command to execute when the service is started. Added in override file
-ExecStart=/usr/bin/python3 /home/factory/Mini-Factory-Python-Controller/pyController/test_factory_sim2.py
+ExecStart=/usr/bin/python3 /home/factory/Mini-Factory-Python-Controller/pyController/pyController.py
 
 # Disable Python's buffering of STDOUT and STDERR, so that output from the
 # service shows up immediately in systemd's logs
