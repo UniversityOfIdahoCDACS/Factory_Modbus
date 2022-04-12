@@ -1,8 +1,12 @@
 """ Utility functions """
 
+# Standard Lib
 import logging
 import sys
 import os
+import signal
+
+# Libraries
 from dotenv import dotenv_values
 
 #*********************************************
@@ -31,3 +35,31 @@ def load_env():
 
 
     return loaded_config
+
+
+class GracefulKiller:
+    # Source: https://stackoverflow.com/a/31464349
+    # Signal doc: https://docs.python.org/3/library/signal.html
+    """
+    Class to term program upon term signal
+    poll kill_now for True and exit
+    example: while not killer.kill_now:
+
+    Tip: In threads use:
+        main_thread = threading.main_thread()
+        while main_thread.is_alive():
+    """
+    kill_now = False
+    def __init__(self):
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
+
+    def exit_gracefully(self, *args):
+        """ Sets kill flag """
+        self.kill_now = True
+        if args[0] == signal.SIGINT:
+            logging.warning("Keyboard interrupt")
+            #print("p Keyboard interrupt")
+        else:
+            logging.warning("Term signal received")
+            #print("p Term signal received")
