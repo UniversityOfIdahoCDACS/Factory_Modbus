@@ -6,7 +6,7 @@ from job_queue import JobQueue
 from inventory import Inventory
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG) # sets default logging level for all modules
+logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
 logger.info("job queue imported")
 

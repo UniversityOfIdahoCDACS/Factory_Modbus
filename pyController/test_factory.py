@@ -8,7 +8,7 @@ import utilities
 from factory.factory import FACTORY
 
 logger = logging.getLogger(__file__)
-logger.setLevel(logging.DEBUG) # sets default logging level for all modules
+logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
 # Create formatter
 #formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] [%(threadName)s] - %(message)s')

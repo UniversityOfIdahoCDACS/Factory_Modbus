@@ -8,7 +8,7 @@ from factory.factory_sim2 import FactorySim2    # Simulated factory
 from pyController import Orchastrator
 
 logger = logging.getLogger(__file__)
-logger.setLevel(logging.DEBUG) # sets default logging level for all modules
+logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
 def main():
     """Main Function"""

@@ -1,6 +1,6 @@
 pyModbusTCP
-PyQt5
+#yQt5
 paho-mqtt
 python-dotenv
-apscheduler
+#apscheduler
 opencv-python-headless

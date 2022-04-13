@@ -159,7 +159,7 @@ class Factory_MQTT():
 if __name__ == '__main__':
     # Create logger
     logger = logging.getLogger("factoryMQTT_test")
-    logger.setLevel(logging.DEBUG) # sets default logging level for all modules
+    logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
     logger.info("Starting factory MQTT")
     config = utilities.load_env()

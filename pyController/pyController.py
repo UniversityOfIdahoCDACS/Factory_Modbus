@@ -22,15 +22,16 @@ from factory.factory_sim2 import FactorySim2    # Simulated factory
 # Logger: logging config   https://docs.python.org/3/howto/logging-cookbook.html
 # Create logger
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG) # sets default logging level for all modules
+logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
 # Create formatter
 #formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] [%(threadName)s] - %(message)s')
 formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] - %(message)s')
 
 # Logger: create rotating file handler
-log_file_path = os.path.dirname(os.path.realpath(__file__)) + "/app_rot.log"
-rfh = RotatingFileHandler(log_file_path)
+script_dir = os.path.dirname(os.path.realpath(__file__))    # Directory this script is running from
+utilities.create_log_dir(script_dir + "/logs")                    # creates /logs directory if missing
+rfh = RotatingFileHandler(script_dir + "/logs/app_rot.log")
 rfh.maxBytes = 1024*1024          # maximum size of a log before being rotated
 rfh.backupCount = 2               # how many rotated files to keep
 rfh.setFormatter(formatter)     # set format
