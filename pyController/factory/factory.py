@@ -10,6 +10,7 @@ from factory.module_vgr import VGR      # Mini-Factory module: Vacume Gripper Ro
 from factory.module_mpo import MPO      # Mini-Factory module: mpo??
 from factory.module_sld import SLD      # Mini-Factory module: sld
 from factory.module_ssc import SSC      # Mini-Factory module: ssc
+from factory.module_ssc_webcam import SSC_Webcam      # Mini-Factory module: SSC Webcam
 
 
 
@@ -31,6 +32,7 @@ class FACTORY():
         self._mpo = MPO(self._mb)
         self._sld = SLD(self._mb)
         self._ssc = SSC(self._mb)
+        self._ssc_webcam = SSC_Webcam(self._mb)
 
         #check ready status
         self._hbw.IsReady()
@@ -38,6 +40,7 @@ class FACTORY():
         self._mpo.IsReady()
         self._mpo.StartSensorStatus()
         self._sld.IsReady()
+        self._ssc_webcam.IsReady()
         #self._hbw.HBW_Status()
 
         # Factory processing variables
@@ -82,6 +85,7 @@ class FACTORY():
                 # Start job
                 self.logger.info("Factory starting processing of a job")
                 self._factory_state = 'processing'
+
                 # Start thread
                 self.logger.info("Starting processing thread")
                 self._processing_thread = threading.Thread(target=self.process_order)
@@ -98,7 +102,6 @@ class FACTORY():
 
         elif self._factory_state == 'fault':
             self.logger.debug("Factory in fault state")
-            self._factory_state = 'fault'
 
         else:
             raise Exception("Invalid factory_state set")
@@ -228,7 +231,7 @@ class FACTORY():
         print("Started _sld")
         self._sld.StartTask1()
 
-    \
+
     def sld_status(self):
         self._sld.SLD_Status()
         return 1

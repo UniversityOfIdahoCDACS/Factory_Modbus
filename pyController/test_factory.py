@@ -37,7 +37,7 @@ def main():
         f.update()
         sleep(2)
     else:
-        print("Factory not idle")
+        print("Factory not ready")
     
     while f.status() != 'ready':
         logger.info("Factory Status: %s", f.status())
