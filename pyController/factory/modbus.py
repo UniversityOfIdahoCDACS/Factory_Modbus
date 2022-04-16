@@ -48,9 +48,6 @@ class MODBUS():
         self._port = port
         self.connection_check()
 
-        # Settings
-        self.retry_count = 2
-
 
     def __del__(self):
         """ Gracefully close Modbus client """
@@ -66,7 +63,7 @@ class MODBUS():
                 raise Exception("Unable to connecto to PLC controller")
         return True
 
-    def read_coil(self, addr, retry_count=self.retry_count):
+    def read_coil(self, addr, retry_count=2):
         self.connection_check()
         try:
             val = self._client.read_coils(addr, 1)
@@ -86,7 +83,7 @@ class MODBUS():
 
                 # Test
                 if val_retry is None:
-                    if retry_count < self.retry_count:
+                    if retry_count < 2:
                         # This is a retry call. Return None
                         return None
                     else:
@@ -106,7 +103,7 @@ class MODBUS():
         responce = self._client.write_single_coil(addr, value)
         return responce
 
-    def read_reg(self, addr, retry_count=self.retry_count):
+    def read_reg(self, addr, retry_count=2):
         self.connection_check()
         try:
             val = self._client.read_coils(addr, 1)
@@ -126,7 +123,7 @@ class MODBUS():
 
                 # Test
                 if val_retry is None:
-                    if retry_count < self.retry_count:
+                    if retry_count < 2:
                         # This is a retry call. Return None
                         return None
                     else:

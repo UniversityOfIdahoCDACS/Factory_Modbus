@@ -9,7 +9,7 @@ from factory.module_hbw import HBW      # Mini-Factory module: High Bay Warehous
 from factory.module_vgr import VGR      # Mini-Factory module: Vacume Gripper Robot
 from factory.module_mpo import MPO      # Mini-Factory module: mpo??
 from factory.module_sld import SLD      # Mini-Factory module: sld
-from factory.module_ssc import SSC      # Mini-Factory module: ssc
+from factory.module_ssc import SSC_LED  # Mini-Factory module: ssc
 from factory.module_ssc_webcam import SSC_Webcam      # Mini-Factory module: SSC Webcam
 
 
