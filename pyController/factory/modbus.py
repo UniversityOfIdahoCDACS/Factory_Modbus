@@ -64,19 +64,18 @@ class MODBUS():
         self.connection_check()
         try:
             val = self._client.read_coils(addr, 1)
-            #logger.debug("Reading coil %s, Val: %s", addr, str(val))
-        except ValueError:
+            #self.logger.debug("Reading coil %s, Val: %s", addr, str(val[0]))
+        except ValueError as e:
+            self.logger.error(e)
             self.logger.error("Value error occured while readying coil %s", addr)
             return 0
 
         # val validation & conversion
-        if val == "[True]":
-            return True
-        elif val == "[False]":
-            return False
-        else:
+        if val is None:
             print("NOT a bool value while readying coil %s" % addr)
             return False
+        else:
+            return val[0]
 
         return val
 
