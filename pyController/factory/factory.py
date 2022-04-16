@@ -55,15 +55,13 @@ class FACTORY():
         modules = [self._hbw, self._vgr, self._mpo, self._sld]
 
         # Test if online
-        #TODO
-
-        # Test if online
-        #TODO
+        self._mb.connection_check()
 
         # Check for Faults
         for module in modules:
             if module.IsFault():
                 factory_status = 'fault'
+                self.logger.debug("Module %s is in fault", module.name)
                 return factory_status
 
         # If no faults, test for all ready
@@ -186,55 +184,6 @@ class FACTORY():
         self._job_data = None # Clear job data that just completed
         return
 
-
-    # _hbw Factory Logic
-    def hbw_task1(self, x_value, y_value):
-        ready_status = str(self._hbw.IsReady())
-        if ready_status == "True":
-            print("_hbw Is Ready: " + ready_status)
-            self._hbw.StartTask1(x_value, y_value)
-        else:
-            print("_hbw Is Not Ready: " + ready_status)
-
-    def hbw_task2(self, x_value, y_value):
-        ready_status = str(self._hbw.IsReady())
-        if ready_status == "True":
-            print("_hbw Is Ready: " + ready_status)
-            self._hbw.StartTask2(x_value, y_value)
-        else:
-            print("_hbw Is Not Ready: " + ready_status)
-
-    def hbw_status(self):
-        self._hbw.HBW_Status()
-        return 1
-
-    # _vgr Factory Logic
-    def vgr_task1(self):
-        print("Started _vgr")
-        self._vgr.StartTask1()
-
-    def vgr_status(self):
-        self._vgr.VGR_Status()
-        return 1
-
-    # _mpo Factory Logic
-    def mpo_task1(self):
-        print("Started _mpo")
-        self._mpo.StartTask1()
-
-    def mpo_status(self):
-        self._mpo.MPO_Status()
-        return 1
-
-    # _sld Factory Logic
-    def sld_task1(self):
-        print("Started _sld")
-        self._sld.StartTask1()
-
-
-    def sld_status(self):
-        self._sld.SLD_Status()
-        return 1
 
     def restock(self):
         pass
