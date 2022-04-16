@@ -43,6 +43,8 @@ class FACTORY():
         self._ssc_webcam.IsReady()
         #self._hbw.HBW_Status()
 
+        self._status_details = None
+
         # Factory processing variables
         self._factory_state = 'ready'       # Status of the factory
         self._processing_thread = None      # Tread object when active
@@ -51,27 +53,54 @@ class FACTORY():
         self.logger.debug("Factory Modbus Initialized")
 
     def status(self):
+        """ Test each module and return a factory status
+        Tests each module's fault and ready flags
+        Generate a status_detailed dictionary object
+        Return factory status string
+        """
         factory_status = 'offline'
         modules = [self._hbw, self._vgr, self._mpo, self._sld]
 
         # Test if online
         self._mb.connection_check()
 
-        # Check for Faults
+        # Test each module
+        modules_ready_status = []
+        modules_faulted_status = []
+        modules_statuses = []
         for module in modules:
-            if module.IsFault():
-                factory_status = 'fault'
-                self.logger.debug("Module %s is in fault", module.name)
-                return factory_status
+            module_faulted = module.IsFault()
+            module_ready = module.IsReady()
 
-        # If no faults, test for all ready
-        factory_status = 'ready'
-        for module in modules:
-            if not module.IsReady():
-                factory_status = 'processing'
-                break
+            # Add to lists
+            modules_faulted_status.append(module_faulted)
+            modules_ready_status.append(module_ready)
+
+            # Module summary (Module name, module faulted, module ready)
+            modules_statuses.append((module.name, module_faulted, module_ready))
+
+        # if any module is faulted, Factory is in Fault state
+        # if all modules are ready, Factory is in a ready state
+        if any(modules_faulted_status):
+            factory_status = 'fault'
+        elif all(modules_ready_status):
+            factory_status = 'ready'
+        else:
+            factory_status = 'processing'
+
+        # Detailed status report
+        self._status_details = {'factory_status': factory_status,          # Factory status
+                                'modules_faulted': modules_faulted_status, # List of bools of faulted modules
+                                'modules_ready': modules_ready_status,     # List of bools of ready modules
+                                'modules_statuses': modules_statuses }     # List: module_name, faulted, ready
 
         return factory_status
+
+    def status_detailed(self):
+        """ Calls Factory.status() and returns detailed information """
+        self.status()
+        return self._status_details
+
 
     def update(self):
         """

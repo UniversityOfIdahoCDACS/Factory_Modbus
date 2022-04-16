@@ -35,6 +35,18 @@ class SSC_LED():
         else:
             self.RLED.clear()
 
+    def IsReady(self):
+        """ Return True if module is in a ready state
+        Not implemented for this module
+        """
+        return True
+
+    def IsFault(self):
+        """ Return True if module is in a fault state
+        Not implemented for this module
+        """
+        return False
+
     def SSC_Status(self):
         """ Show bit & register statuses """
         print("************************")
