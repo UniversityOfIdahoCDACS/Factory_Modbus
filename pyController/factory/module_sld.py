@@ -6,6 +6,7 @@ from factory.bit import BIT             # Modbus Bit
 #*            SLD            *
 #*****************************
 class SLD():
+    name = "SLD"
     def __init__(self, modbus):
         self.Task1 =        BIT(800, modbus)
         #801 - 897 buttons on HMI

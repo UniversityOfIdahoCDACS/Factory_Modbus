@@ -64,6 +64,7 @@ class FACTORY():
         for module in modules:
             if module.IsFault():
                 factory_status = 'fault'
+                self.logger.debug("Module %s is in fault", module.name)
                 return factory_status
 
         # If no faults, test for all ready

@@ -7,6 +7,7 @@ from factory.bit import BIT             # Modbus Bit
 #*           HBW             *
 #*****************************
 class HBW():
+    name = "HBW"
     def __init__(self, modbus):
         self.Task1 =        BIT(101, modbus)
         self.Task2 =        BIT(102, modbus)

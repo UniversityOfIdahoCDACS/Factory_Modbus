@@ -7,6 +7,7 @@ from factory.bit import BIT             # Modbus Bit
 #*            VGR            *
 #*****************************
 class VGR():
+    name = "VGR"
     def __init__(self, modbus):
         self.Reset =        BIT(200, modbus)
         self.Task1 =        BIT(210, modbus)

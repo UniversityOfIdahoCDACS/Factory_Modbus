@@ -6,6 +6,7 @@ from factory.bit import BIT             # Modbus Bit
 #*           SSC             *
 #*****************************
 class SSC():
+    name = "SSC"
     def __init__(self, modbus):
         self.GLED = BIT(60, modbus)
         self.YLED = BIT(61, modbus)

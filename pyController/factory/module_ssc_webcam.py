@@ -7,6 +7,7 @@ from factory.bit import BIT             # Modbus Bit
 #*       SSC_Webcam          *
 #*****************************
 class SSC_Webcam():
+    name = "SSC_Webcam"
     def __init__(self, modbus):
         self.reset          = BIT(600, modbus) #reset
         self.Task1          = BIT(601, modbus) #Start routine

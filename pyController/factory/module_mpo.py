@@ -6,6 +6,7 @@ from factory.bit import BIT             # Modbus Bit
 #*            MPO            *
 #*****************************
 class MPO():
+    name = "MPO"
     def __init__(self, modbus):
         self.Task1          = BIT(400, modbus) #go
         self.status_manual  = BIT(401, modbus) #manual control mode
