@@ -133,9 +133,11 @@ class Factory_MQTT():
                     self.add_job_callback(job_payload)
 
             elif mypayload['msg_type'] == 'cancel_job_id':
-                pass
+                self.cancel_job_callback(mypayload['job_id'])
+
             elif mypayload['msg_type'] == 'cancel_order_id':
-                pass
+                self.cancel_job_callback(mypayload['order_id'])
+
             else:
                 self.publish("Factory/Job_notice", f"Invalid message type {mypayload['msg_type']}")
                 self.logger.error("Message received with invalid message type %s", mypayload['msg_type'])
