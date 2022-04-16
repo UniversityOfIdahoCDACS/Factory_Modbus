@@ -33,7 +33,7 @@ class MODBUS():
         self.trace_logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
         # Logger: create rotating file handler
-        log_file_path = os.path.dirname(os.path.realpath(__file__)) + "/app_rot.log"
+        log_file_path = os.path.dirname(os.path.realpath(__file__)) + "/modbus.log"
         rfh = RotatingFileHandler(log_file_path)
         rfh.maxBytes = 1024*1024          # maximum size of a log before being rotated
         rfh.backupCount = 2               # how many rotated files to keep
@@ -47,6 +47,9 @@ class MODBUS():
         self._ip = ip
         self._port = port
         self.connection_check()
+
+        # Settings
+        self.retry_count = 2
 
 
     def __del__(self):
@@ -63,7 +66,7 @@ class MODBUS():
                 raise Exception("Unable to connecto to PLC controller")
         return True
 
-    def read_coil(self, addr):
+    def read_coil(self, addr, retry_count=self.retry_count):
         self.connection_check()
         try:
             val = self._client.read_coils(addr, 1)
@@ -71,16 +74,31 @@ class MODBUS():
         except ValueError as e:
             self.logger.error(e)
             self.logger.error("Value error occured while readying coil %s", addr)
-            return 0
+            return False
 
         # val validation & conversion
         if val is None:
-            print("NOT a bool value while readying coil %s" % addr)
-            return False
+            if retry_count > 0:
+                log_msg = "None retuned for coil %s" % str(addr + 1)  # The '+1' is to counteract the '-1' fix in Bit class
+                self.logger.warning(log_msg)
+                time.sleep(0.01)
+                val_retry = self.read_coil(addr, retry_count=retry_count-1) # Will return value instead of list
+
+                # Test
+                if val_retry is None:
+                    if retry_count < self.retry_count:
+                        # This is a retry call. Return None
+                        return None
+                    else:
+                        # This is the main call. Return value as all retries have returned None
+                        return False # Return False value as a default
+                else:
+                    # log_msg = f"rc: {retry_count} | r.out | type: {type(val_retry)} | value: {val_retry}"
+                    # self.logger.info(log_msg)
+                    return val_retry
         else:
             return val[0]
 
-        return val
 
     def write_coil(self, addr, value):
         self.connection_check()
@@ -88,34 +106,39 @@ class MODBUS():
         responce = self._client.write_single_coil(addr, value)
         return responce
 
-    def read_reg(self, addr):
+    def read_reg(self, addr, retry_count=self.retry_count):
         self.connection_check()
         try:
-            response = self._client.read_holding_registers(addr, 1)
-        except ValueError:
-            self.logger.error("Value error occured while readying reg %s", addr)
-            response = [0] # Not great but it prevents the logic from crashing
-        #print (f"Modbus read_reg responce: {response}, type: {type(response)}")
+            val = self._client.read_coils(addr, 1)
+            #self.logger.debug("Reading Register %s, Val: %s", addr, str(val[0]))
+        except ValueError as e:
+            self.logger.error(e)
+            self.logger.error("Value error occured while readying Register %s", addr)
+            return 0
 
-        if response is None:
-            self.logger.warning("Response is None trying again")
-            time.sleep(0.3)
-            try:
-                response = self._client.read_holding_registers(addr, 1)
-            except ValueError:
-                self.logger.error("Value error occured while readying reg %s", addr)
+        # val validation & conversion
+        if val is None:
+            if retry_count > 0:
+                log_msg = "None retuned for Register %s" % str(addr + 1)  # The '+1' is to counteract the '-1' fix in Bit class
+                self.logger.warning(log_msg)
+                time.sleep(0.01)
+                val_retry = self.read_reg(addr, retry_count=retry_count-1) # Will return value instead of list
 
-            if response is None:
-                response = [0]
+                # Test
+                if val_retry is None:
+                    if retry_count < self.retry_count:
+                        # This is a retry call. Return None
+                        return None
+                    else:
+                        # This is the main call. Return value as all retries have returned None
+                        return 0 # Return False value as a default
+                else:
+                    # log_msg = f"rc: {retry_count} | r.out | type: {type(val_retry)} | value: {val_retry}"
+                    # self.logger.info(log_msg)
+                    return val_retry
+        else:
+            return val[0]
 
-
-        try:
-            return_val = int(response[0])
-        except ValueError:
-            print(f"Value error occured while converting to int {addr}")
-            return_val = 0
-
-        return return_val
 
     def write_reg(self, addr, val):
         self.connection_check()

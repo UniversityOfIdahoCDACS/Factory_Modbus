@@ -68,7 +68,7 @@ class FACTORY():
         factory_status = 'ready'
         for module in modules:
             if not module.IsReady():
-                factory_status = 'running'
+                factory_status = 'processing'
                 break
 
         return factory_status
