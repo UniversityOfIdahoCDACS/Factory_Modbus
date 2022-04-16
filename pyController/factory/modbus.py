@@ -54,6 +54,9 @@ class MODBUS():
         self._client.close()
 
     def connection_check(self):
+        """ Checks connection to PLC controller
+        Raises an exception if connection is closed
+        """
         if not self._client.is_open():
             if not self._client.open():
                 print("Unable to connect to %s:%s" % (self._ip, self._port))

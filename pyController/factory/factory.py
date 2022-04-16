@@ -55,10 +55,7 @@ class FACTORY():
         modules = [self._hbw, self._vgr, self._mpo, self._sld]
 
         # Test if online
-        #TODO
-
-        # Test if online
-        #TODO
+        self._mb.connection_check()
 
         # Check for Faults
         for module in modules:

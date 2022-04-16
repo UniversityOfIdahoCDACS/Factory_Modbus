@@ -18,13 +18,7 @@ class MPO():
         self.fault_status = BIT(503, modbus)
         self.light_start =  BIT(504, modbus)
         self.light_end =    BIT(505, modbus)
-        #self.status_flag2 = BIT(52, modbus) #modbus input 401 saw on light
-        #self.status_ready = REGISTER(402, modbus) #modbus input 402 ready light
-                                            #modbus input 403 fault light
-                                            #modbus input 404 start light sensor
-                                            #modbus input 405 end light sensor
-        #MHR800 oven
-        #MHR801 Saw
+
 
     def IsReady(self):
         """ Return True if module is in a ready state """
