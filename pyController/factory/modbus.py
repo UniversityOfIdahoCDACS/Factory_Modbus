@@ -33,7 +33,7 @@ class MODBUS():
         self.trace_logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
         # Logger: create rotating file handler
-        log_file_path = os.path.dirname(os.path.realpath(__file__)) + "/modbus.log"
+        log_file_path = os.path.dirname(os.path.realpath(__file__)) + "/logs/modbus.log"
         rfh = RotatingFileHandler(log_file_path)
         rfh.maxBytes = 1024*1024          # maximum size of a log before being rotated
         rfh.backupCount = 2               # how many rotated files to keep

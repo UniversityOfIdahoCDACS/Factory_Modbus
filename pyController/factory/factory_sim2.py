@@ -14,11 +14,12 @@ class FactorySim2():
     """This class simulates the input and output of the real factory class
        Used as a drop in replacement for Factory class when the PLC is unavailable"""
 
-    def __init__(self):
+    def __init__(self, processing_time=40):
         """ Initialize class instance"""
         self.factory_state = "ready" # [ready, processing, fault, offline]
         self.job_data = None
 
+        self.processing_time = processing_time # The total work time proccess will take
         self.processing_thread = None
         self.processing_thread_stop = False
 
@@ -78,30 +79,31 @@ class FactorySim2():
 
     def process(self):
         """ Simulate processing """
+        wait_time = self.processing_time / 4
 
         def wait(self, sleep_time):
             """ Wait function that monitors a thread stop condition """
             main_thread = threading.main_thread()
 
-            for _ in range(sleep_time):
+            for _ in range(int(sleep_time)):
                 if not main_thread.is_alive() or self.processing_thread_stop:
                     logger.info("FactorySim thread exiting")
                     sys.exit(0)
                 else:
                     sleep(1)
 
-        logger.info("Processing Started")
+        logger.info("Processing Started. Processing time %d seconds", self.processing_time)
         # sleep(3)
-        wait(self, 10)
+        wait(self, wait_time)
         logger.info("Processing ...")
         # sleep(3)
-        wait(self, 10)
+        wait(self, wait_time)
         logger.info("Processing ...")
         # sleep(3)
-        wait(self, 10)
+        wait(self, wait_time)
         logger.info("Processing ...")
         # sleep(3)
-        wait(self, 10)
+        wait(self, wait_time)
         logger.info("Processing Finished")
         self.job_data = None
         return

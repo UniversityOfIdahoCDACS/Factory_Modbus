@@ -23,7 +23,7 @@ def main():
 
     logging.getLogger('Factory_Sim2').setLevel(logging.DEBUG)
 
-    fs = FactorySim2()
+    fs = FactorySim2(processing_time=4)
     logger.info("Factory Status: %s", fs.status())
 
     order = JobData(job_id=123, order_id=1, color='blue', cook_time=16, sliced=True)

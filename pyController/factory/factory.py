@@ -31,19 +31,12 @@ class FACTORY():
         self._vgr = VGR(self._mb)
         self._mpo = MPO(self._mb)
         self._sld = SLD(self._mb)
-        self._ssc = SSC(self._mb)
+        self._ssc = SSC_LED(self._mb)
         self._ssc_webcam = SSC_Webcam(self._mb)
 
         #check ready status
-        self._hbw.IsReady()
-        self._vgr.IsReady()
-        self._mpo.IsReady()
-        self._mpo.StartSensorStatus()
-        self._sld.IsReady()
-        self._ssc_webcam.IsReady()
-        #self._hbw.HBW_Status()
-
         self._status_details = None
+        self.status()
 
         # Factory processing variables
         self._factory_state = 'ready'       # Status of the factory
