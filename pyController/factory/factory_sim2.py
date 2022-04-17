@@ -26,11 +26,11 @@ class FactorySim2():
         """ Returns the state of the factory """
         return self.factory_state
 
-    def order(self, slot_x, slot_y, cook_time, do_slice):
+    def order(self, job_data):
         """ Load processing job order """
         if self.factory_state == 'ready':
             logger.info("Factory importing job data")
-            self.job_data = {'x': slot_x, 'y': slot_y, 'cook_time': cook_time, 'do_slice': do_slice}
+            self.job_data = job_data
             return 0
         else:
             logger.error("Factory not ready. Not accepting job")

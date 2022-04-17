@@ -135,11 +135,11 @@ class FACTORY():
 
         return self._factory_state
 
-    def order(self, slot_x, slot_y, cook_time, do_slice):
+    def order(self, job_data):
         """ Load processing job order """
         if self._factory_state == 'ready':
             self.logger.info("Factory importing job data")
-            self._job_data = {'x': slot_x, 'y': slot_y, 'cook_time': cook_time, 'do_slice': do_slice}
+            self._job_data = job_data
             return 0
         else:
             self.logger.error("Factory not ready. Not accepting job")
@@ -147,10 +147,15 @@ class FACTORY():
 
 
     def process_order(self):
-        x_value = self._job_data['x'] + 1
-        y_value = self._job_data['y'] + 1
-        cook_time = self._job_data['cook_time']
-        do_slice = self._job_data['do_slice']
+        """ Main order sequence for factory
+        Expects self._job_data to be populated
+        """
+        # Parse Job data
+        x_value = self._job_data.slot[0]
+        y_value = self._job_data.slot[1]
+        cook_time = self._job_data.cook_time
+        do_slice = self._job_data.sliced
+
         self.logger.info("Factory process started")
         self.logger.debug("X: %d, Y: %d", x_value, y_value)
 

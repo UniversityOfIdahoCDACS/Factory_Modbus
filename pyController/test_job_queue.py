@@ -3,6 +3,7 @@
 
 import logging
 from job_queue import JobQueue
+from job_data import JobData
 from inventory import Inventory
 
 logger = logging.getLogger()
@@ -31,11 +32,12 @@ if __name__ == '__main__':
 
     q = JobQueue()
 
-    order = {'job_id': 123, 'order_id': 1, 'color': 'red', 'cook_time': 12, 'slice': True}
+
+    order = JobData(job_id=123, order_id=1, color='red', cook_time=12, sliced=True)
     q.add_job(order)
-    order = {'job_id': 124, 'order_id': 1, 'color': 'red', 'cook_time': 13, 'slice': False}
+    order = JobData(job_id=123, order_id=1, color='white', cook_time=14, sliced=True)
     q.add_job(order)
-    order = {'job_id': 125, 'order_id': 2, 'color': 'red', 'cook_time': 14, 'slice': True}
+    order = JobData(job_id=123, order_id=1, color='blue', cook_time=16, sliced=True)
     q.add_job(order)
 
     logger.info(q.has_jobs())

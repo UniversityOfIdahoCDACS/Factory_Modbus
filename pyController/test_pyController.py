@@ -3,6 +3,7 @@
 
 import logging
 from job_queue import JobQueue
+from job_data import JobData
 from inventory import Inventory
 from factory.factory_sim2 import FactorySim2    # Simulated factory
 from pyController import Orchastrator
@@ -29,16 +30,17 @@ def main():
 
     if True:
         logger.info("Running Tests")
-        add_job = {'job_id': 123, 'order_id': 100, 'color': "red", 'cook_time': 3, 'slice': True}
+        add_job = JobData(job_id=123, order_id=100, color='red', cook_time=12, sliced=True)
         orchastrator.add_job_callback(add_job)
-        add_job = {'job_id': 124, 'order_id': 100, 'color': "red", 'cook_time': 3, 'slice': True}
+        add_job = JobData(job_id=124, order_id=100, color='red', cook_time=12, sliced=True)
         orchastrator.add_job_callback(add_job)
-        add_job = {'job_id': 225, 'order_id': 201, 'color': "red", 'cook_time': 3, 'slice': True}
+        add_job = JobData(job_id=125, order_id=201, color='red', cook_time=12, sliced=True)
         orchastrator.add_job_callback(add_job)
-        add_job = {'job_id': 226, 'order_id': 201, 'color': "red", 'cook_time': 3, 'slice': True}
+        add_job = JobData(job_id=126, order_id=201, color='red', cook_time=12, sliced=True)
         orchastrator.add_job_callback(add_job)
-        add_job = {'job_id': 227, 'order_id': 201, 'color': "red", 'cook_time': 3, 'slice': True}
+        add_job = JobData(job_id=127, order_id=201, color='red', cook_time=12, sliced=True)
         orchastrator.add_job_callback(add_job)
+
 
         orchastrator.cancel_job_id_callback(124)
         orchastrator.cancel_job_id_callback(1256)

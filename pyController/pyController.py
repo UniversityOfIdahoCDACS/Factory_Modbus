@@ -8,6 +8,7 @@ from logging.handlers import RotatingFileHandler
 # factory modules import
 import utilities
 from job_queue import JobQueue
+from job_data import JobData
 from inventory import Inventory
 from mqtt import Factory_MQTT
 import webcam
@@ -70,23 +71,22 @@ class Orchastrator():
 
 
     def add_job_callback(self, job_data):
+        """ Add job data to Job queue """
         # Verify
-        if not ('job_id' and 'order_id' and 'color' and 'cook_time' and 'slice' in job_data):
-            log_msg = f"Invalid new job data. dir: {dir(job_data)}"
+        if not isinstance(job_data, JobData):
+            log_msg = f"Invalid new job data. Not job_data object)"
             logging.error("%s", log_msg)
-            notice_msg = {'msg_type': 'error', 'message': "Invalid new job data"}
-            self.send_job_notice(notice_msg)
-            return
 
         # Add to queue
         self.queue.add_job(job_data)
-        log_msg = f"Added job {job_data['job_id']} for order {job_data['order_id']} | color: {job_data['color']},  cook time: {job_data['cook_time']}, sliced: {job_data['slice']}"
+        log_msg = f"Added job {job_data.job_id} for order {job_data.order_id} | color: {job_data.color},  cook time: {job_data.cook_time}, sliced: {job_data.sliced}"
         logging.info(log_msg)
-        notice_msg = {'msg_type': 'job_status', 'job_id': job_data['job_id'], 'message': 'Added to queue'}
+        notice_msg = {'msg_type': 'job_status', 'job_id': job_data.job_id, 'message': 'Added to queue'}
         self.send_job_notice(notice_msg)
 
 
     def cancel_job_id_callback(self, job_id):
+        """ Search job queue and delete matching job id """
         # Verify
         if not (isinstance(job_id, int) and job_id >= 0):
             log_msg = f"Error: Invalid cancel job id: {job_id}"
@@ -110,6 +110,7 @@ class Orchastrator():
 
 
     def cancel_job_order_callback(self, order_id):
+        """ Search job queue and delete all jobs matching order id """
         # Verify
         if not (isinstance(order_id, int) and order_id >= 0):
             log_msg = f"Error: Invalid cancel order id: {order_id}"
@@ -122,7 +123,7 @@ class Orchastrator():
         canceled_list = self.queue.cancel_job_order(order_id)
 
         # Report
-        if len(canceled_list) > 0:                 # If jobs were deleted
+        if len(canceled_list) > 0:             # If jobs were deleted
             for deleted_job_id in canceled_list:
                 log_msg = f"Deleting Job #: {deleted_job_id} from order {order_id}"
                 notice_msg = {'msg_type': 'job_status', 'job_id': deleted_job_id, 'message': "Canceled"}
@@ -154,7 +155,7 @@ class Orchastrator():
             if self.current_job is None:
                 status['current_job'] = "None"
             else:
-                status['current_job'] = str(self.current_job[0]['job_id'])
+                status['current_job'] = str(self.current_job.job_id)
 
             status['job_queue_len'] = str(self.queue.has_jobs())
             self.mqtt.publish("Factory/Status", payload=json.dumps(status), qos=0)
@@ -176,11 +177,10 @@ class Orchastrator():
         # If factory just finished processing
         if factory_state == 'ready' and self.last_factory_state == 'processing':
             # Job finished
-            job_id = self.current_job[0]['job_id']
-            message = f"Job {job_id} has been completed"
+            message = f"Job {self.current_job.job_id} has been completed"
             logging.info(message)
-            
-            notice_msg = {'msg_type': 'job_status', 'job_id': job_id, 'message': 'Completed'}
+
+            notice_msg = {'msg_type': 'job_status', 'job_id': self.current_job.job_id, 'message': 'Completed'}
             self.send_job_notice(notice_msg)
             self.current_job = None
             self.send_status()
@@ -200,7 +200,7 @@ class Orchastrator():
         '''Start factory operation'''
         if self.queue.has_jobs:
             # Pop next job
-            current_job = self.queue.next_available_job(self.inventory) # returns (job, slot) or False
+            current_job = self.queue.next_available_job(self.inventory) # returns job or False
 
             if current_job is False: # No job ready
                 logging.debug("Could not match waiting job with available inventory")
@@ -208,24 +208,14 @@ class Orchastrator():
             else:
                 self.current_job = current_job
 
-            # Parse job
-            job_id = current_job[0]['job_id']
-            slot = current_job[1]
-            #job_color = self.current_job[0]['color']
-            cook_time = current_job[0]['cook_time']
-            do_slice = current_job[0]['slice']
-
-            # Verify data
-            #if not self.current_job['']
-
             # Send to factory
-            self.factory.order(slot[0], slot[1], cook_time, do_slice)
+            self.factory.order(current_job)
 
-            message = f"Started job {job_id}"
+            message = f"Started job {current_job.job_id}"
             logging.info(message)
-            
+
             # Send updated information
-            notice_msg = {'msg_type': 'job_status', 'job_id': job_id, 'message': 'Started'}
+            notice_msg = {'msg_type': 'job_status', 'job_id': current_job.job_id, 'message': 'Started'}
             self.send_job_notice(notice_msg)
             self.send_status()
             self.send_inventory()
@@ -266,8 +256,8 @@ def main():
     else:
         logging.info("Using Factory Modbus")
         factory = FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
-    
-    
+
+
     # Setup webcam
     if config['FAKE_WEBCAM'] == 'True':
         logging.debug("Using fake image source")
