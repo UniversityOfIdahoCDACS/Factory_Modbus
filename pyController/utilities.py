@@ -63,3 +63,16 @@ class GracefulKiller:
         else:
             logging.warning("Term signal received")
             #print("p Term signal received")
+
+def create_log_dir(path):
+    """
+    Tests for logging directory. Creates directory if missing
+    path: log directory path
+    Example: create_log_dir("/var/log/project")
+    Example: create_log_dir("./logs")
+    """
+
+    # Test if path exists
+    if not os.path.exists(path):
+        logging.info("Logging directory not found. Creating at %s", path)
+        os.mkdir(path)

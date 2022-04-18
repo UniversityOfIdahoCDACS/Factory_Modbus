@@ -8,11 +8,7 @@ import socket       # Used for exception handling
 import ssl          # Used for MQTT TLS connection
 import paho.mqtt.client as mqtt
 import utilities
-
-#*********************************************
-#* * * * * * * * * Logger Setup * * * * * * * *
-#*********************************************
-# Created in Class
+from job_data import JobData
 
 
 class Factory_MQTT():
@@ -90,8 +86,7 @@ class Factory_MQTT():
 
     # Health check and any periodic jobs
     def update(self):
-        self.logger.debug("MQTT update")
-        self.logger.debug(">MQTT State: %s", self.client._state)
+        self.logger.debug("MQTT State: %s", self.client._state)
         # check connection?
 
     # TODO
@@ -108,6 +103,9 @@ class Factory_MQTT():
 
 
     def on_message(self, client, userdata, message):
+        """ Activates on message recieved
+        Parses payload based on msg_type
+        """
         # We don't care about client. Returned client object
         # We don't care about userdata. Empty
 
@@ -124,18 +122,34 @@ class Factory_MQTT():
         echo_msg = f"Factory recieved message type {mypayload['msg_type']}"
         self.publish('Factory/Echo', payload=echo_msg)
 
+        # Parse message
         self.logger.debug("> Parsing message")
         if 'msg_type' in mypayload:
             if mypayload['msg_type'] == 'new_job':
                 job_payload = mypayload['payload']
                 self.logger.info("Recieved new job")
+
                 if self.add_job_callback is not None:
-                    self.add_job_callback(job_payload)
+                    try:
+                        # Create job data object. This also validates inputes
+                        job_data = JobData(job_id=job_payload['job_id'], order_id=job_payload['order_id'],
+                                           color=job_payload['color'], cook_time=job_payload['cook_time'],
+                                           sliced=job_payload['slice'])
+                    except AttributeError as error:
+                        log_msg = f"Error creating job object with data {job_payload}.\n{error}"
+                        self.logger.error(log_msg)
+                    except Exception as error:
+                        self.logger.error("Unknown error %s" % error)
+                    else: # No error
+                        self.add_job_callback(job_data)
+
 
             elif mypayload['msg_type'] == 'cancel_job_id':
-                pass
+                self.cancel_job_callback(mypayload['job_id'])
+
             elif mypayload['msg_type'] == 'cancel_order_id':
-                pass
+                self.cancel_job_callback(mypayload['order_id'])
+
             else:
                 self.publish("Factory/Job_notice", f"Invalid message type {mypayload['msg_type']}")
                 self.logger.error("Message received with invalid message type %s", mypayload['msg_type'])
@@ -159,7 +173,7 @@ class Factory_MQTT():
 if __name__ == '__main__':
     # Create logger
     logger = logging.getLogger("factoryMQTT_test")
-    logger.setLevel(logging.DEBUG) # sets default logging level for all modules
+    logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
     logger.info("Starting factory MQTT")
     config = utilities.load_env()

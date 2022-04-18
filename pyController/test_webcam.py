@@ -10,7 +10,7 @@ import webcam
 
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG) # sets default logging level for all modules
+logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
 def main():
     """Main Function"""

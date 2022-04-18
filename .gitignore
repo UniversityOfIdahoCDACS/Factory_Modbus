@@ -1,3 +1,10 @@
+# Temporary Ignores
+doc/*
+docs/*
+tests/*
+notes.txt
+tests.sh
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

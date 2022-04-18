@@ -8,7 +8,7 @@ import utilities
 from factory.factory import FACTORY
 
 logger = logging.getLogger(__file__)
-logger.setLevel(logging.DEBUG) # sets default logging level for all modules
+logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
 # Create formatter
 #formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] [%(threadName)s] - %(message)s')
@@ -31,18 +31,19 @@ def main():
     logger.info("Factorystatus %s", f_status)
 
 
-    if f_status == 'idle':
+    if f_status == 'ready':
         # order
-        f.order(3, 1, 2, True)
+        f.order(2, 1, 2, True)
         f.update()
         sleep(2)
     else:
-        print("Factory not idle")
+        print("Factory not ready")
     
-    while f.status() != 'idle':
+    while f.status() != 'ready':
         logger.info("Factory Status: %s", f.status())
         f.update()
         sleep(1)
+        
 
 
 if __name__ == "__main__":

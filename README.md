@@ -6,27 +6,28 @@ WIP
 
 # Installation
 ## Clone repo
-Clone repo
-
-```bash
-git clone https://github.com/UniversityOfIdahoCDACS/Mini-Factory-Python-Controller.git
-```
-
-## venv setup
-Setting up a local environment is useful to isolate packages to this project
-1. Navigate to repo
+1. Clone repo
 
     ```bash
-    cd Mini-Factory-Python-Controller
+    git clone https://github.com/UniversityOfIdahoCDACS/Mini-Factory-Python-Controller.git
     ```
 
-2. Create environment
+2. Change directory
+
+    ```bash
+    cd ~/Mini-Factory-Python-Controller
+    ```
+
+
+## venv setup [optional]
+Setting up a local environment is useful to isolate packages to this project
+1. Create environment
 
     ```bash
     python -m venv ./.venv
     ```
 
-3. Source virtual environment
+2. Source virtual environment
 
     ```bash
     # Linux
@@ -41,7 +42,7 @@ Install python3 and pip
 Then install project libraries
 
 ```bash
-sudo apt install python3 python3-pip
+sudo apt install python3 python3-pip python-opencv libatlas-base-dev
 pip install -r requirements.txt
 ```
 
@@ -49,7 +50,7 @@ pip install -r requirements.txt
 1. Make a copy of .env-example
 
     ```bash
-    cp .env-example .env
+    cp pyController/.env-example pyController/.env
     ```
 
 2. Update .env file contents

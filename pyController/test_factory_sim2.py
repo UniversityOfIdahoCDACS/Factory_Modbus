@@ -3,6 +3,7 @@
 
 import logging
 from time import sleep
+from job_data import JobData
 from factory.factory_sim2 import FactorySim2
 
 logger = logging.getLogger()
@@ -22,10 +23,13 @@ def main():
 
     logging.getLogger('Factory_Sim2').setLevel(logging.DEBUG)
 
-    fs = FactorySim2()
+    fs = FactorySim2(processing_time=4)
     logger.info("Factory Status: %s", fs.status())
 
-    fs.order(1, 2, 3, 4)
+    order = JobData(job_id=123, order_id=1, color='blue', cook_time=16, sliced=True)
+    order.add_slot((1,2))
+    fs.order(order)
+
     fs.update()
     sleep(0.01)
 
