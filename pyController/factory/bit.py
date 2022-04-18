@@ -48,3 +48,16 @@ class BIT():
             value = 1
         self.value = value
         self._mb.write_coil(self._addr, value)
+
+
+class BIT_DInput():
+    """ Bit variant using read discret input """
+    def __init__(self, addr, modbus):
+        self._addr = addr -1    # '-1' is a bugfix to correct address space differences on the PLC
+        self._mb = modbus
+        self.value = 0
+
+    def read(self):
+        """ Read discret input value of this bit """
+        self.value = self._mb.read_discreet_input(self._addr)
+        return self.value
