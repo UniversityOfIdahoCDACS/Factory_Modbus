@@ -143,7 +143,7 @@ class Orchastrator():
         if self.mqtt is not None:
             inv = {}
             inv['Inventory'] = self.inventory.get_inventory()
-            logging.debug("Got inventory: %s", inv)
+            logging.info("Inventory: %s", inv['Inventory'])
 
             self.mqtt.publish('Factory/Inventory', payload=json.dumps(inv), qos=0)
         return
@@ -174,7 +174,7 @@ class Orchastrator():
         """Run the factory's update function.
            This should be called every 1-5 seconds"""
         factory_state = self.factory.update()
-        logging.info("Factory state: %s", factory_state)
+        logging.debug("Factory state: %s", factory_state)
 
         # If factory just finished processing
         if factory_state == 'ready' and self.last_factory_state == 'processing':
@@ -300,8 +300,13 @@ def main():
         if count % 15 == 0:
             orchastrator.send_status()
 
-        if count > 60:
+        if count % 60 == 0:
             orchastrator.send_inventory()
+        
+        if count > 600:
+            if config['FACTORY_SIM'] == 'True':
+                logging.info("Resetting Inventory")
+                orchastrator.inventory.preset_inventory()
             count = 0
 
     # Shutdown
