@@ -32,7 +32,7 @@ def main():
     logger.info("Factorystatus %s", f_status)
 
     job_data = JobData(job_id=123, order_id=100, color='red', cook_time=12, sliced=True)
-    job_data.add_slot((1,2))
+    job_data.add_slot((3,2))
 
     if f_status == 'ready':
         f.order(job_data)

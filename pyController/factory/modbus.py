@@ -73,10 +73,18 @@ class MODBUS():
             self.trace_logger.debug(">Reading coil %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
-            self.logger.error("Value error occured while readying coil %s", addr)
+            self.logger.error("Value error occured while reading coil %s", addr)
             self.trace_logger.error(e)
-            self.trace_logger.error("Value error occured while readying coil %s", addr)
+            self.trace_logger.error("Value error occured while reading coil %s", addr)
             return False
+        except AttributeError as e:
+            # This can occure when _sock is none in client.py
+            self.logger.error(e)
+            self.logger.error("Attribute error occured while reading coil %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Attribute error occured while reading coil %s", addr)
+            val = None
+
 
         # val validation & conversion
         if val is None:
@@ -110,10 +118,17 @@ class MODBUS():
             self.trace_logger.debug("Reading coil %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
-            self.logger.error("Value error occured while readying coil %s", addr)
+            self.logger.error("Value error occured while reading coil %s", addr)
             self.trace_logger.error(e)
-            self.trace_logger.error("Value error occured while readying coil %s", addr)
+            self.trace_logger.error("Value error occured while reading coil %s", addr)
             return False
+        except AttributeError as e:
+            # This can occure when _sock is none in client.py
+            self.logger.error(e)
+            self.logger.error("Attribute error occured while reading input %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Attribute error occured while reading input %s", addr)
+            val = None
 
         # val validation & conversion
         if val is None:
@@ -146,10 +161,17 @@ class MODBUS():
             self.trace_logger.debug("Reading reg %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
-            self.logger.error("Value error occured while readying Register %s", addr)
+            self.logger.error("Value error occured while reading Register %s", addr)
             self.trace_logger.error(e)
-            self.trace_logger.error("Value error occured while readying Register %s", addr)
+            self.trace_logger.error("Value error occured while reading Register %s", addr)
             return 0
+        except AttributeError as e:
+            # This can occure when _sock is none in client.py
+            self.logger.error(e)
+            self.logger.error("Attribute error occured while reading reg %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Attribute error occured while reading reg %s", addr)
+            val = None
 
         # val validation & conversion
         if val is None:
@@ -182,10 +204,17 @@ class MODBUS():
             self.trace_logger.debug("Reading reg %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
-            self.logger.error("Value error occured while readying Register %s", addr)
+            self.logger.error("Value error occured while reading Register %s", addr)
             self.trace_logger.error(e)
-            self.trace_logger.error("Value error occured while readying Register %s", addr)
+            self.trace_logger.error("Value error occured while reading Register %s", addr)
             return 0
+        except AttributeError as e:
+            # This can occure when _sock is none in client.py
+            self.logger.error(e)
+            self.logger.error("Attribute error occured while reading input reg %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Attribute error occured while reading inputreg %s", addr)
+            val = None
 
         # val validation & conversion
         if val is None:
