@@ -67,9 +67,10 @@ class MODBUS():
 
     def read_coil(self, addr, retry_count=2):
         self.connection_check()
+        self.trace_logger.debug("Reading coil %s", str(addr + 1))
         try:
             val = self._client.read_coils(addr, 1)
-            self.trace_logger.debug("Reading coil %s, Val: %s, retry_count: %d", str(addr + 1), str(val[0]), retry_count)
+            self.trace_logger.debug(">Reading coil %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
             self.logger.error("Value error occured while readying coil %s", addr)
@@ -106,7 +107,7 @@ class MODBUS():
         self.connection_check()
         try:
             val = self._client.read_discrete_inputs(addr, 1)
-            self.trace_logger.debug("Reading coil %s, Val: %s, retry_count: %d", str(addr + 1), str(val[0]), retry_count)
+            self.trace_logger.debug("Reading coil %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
             self.logger.error("Value error occured while readying coil %s", addr)
@@ -120,7 +121,7 @@ class MODBUS():
                 log_msg = "None retuned for coil %s" % str(addr + 1)  # The '+1' is to counteract the '-1' fix in Bit class
                 self.logger.warning(log_msg)
                 time.sleep(0.01)
-                val_retry = self.read_coil(addr, retry_count=retry_count-1) # Will return value instead of list
+                val_retry = self.read_discreet_input(addr, retry_count=retry_count-1) # Will return value instead of list
                 self.trace_logger.debug(">Retry returned %s", val_retry)
 
                 # Test
@@ -142,7 +143,7 @@ class MODBUS():
         self.connection_check()
         try:
             val = self._client.read_holding_registers(addr, 1)
-            self.trace_logger.debug("Reading reg %s, Val: %s, retry_count: %d", str(addr + 1), str(val[0]), retry_count)
+            self.trace_logger.debug("Reading reg %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
             self.logger.error("Value error occured while readying Register %s", addr)
@@ -156,7 +157,7 @@ class MODBUS():
                 log_msg = "None retuned for Register %s" % str(addr + 1)  # The '+1' is to counteract the '-1' fix in Bit class
                 self.logger.warning(log_msg)
                 time.sleep(0.01)
-                val_retry = self.read_reg(addr, retry_count=retry_count-1) # Will return value instead of list
+                val_retry = self.read_holding_reg(addr, retry_count=retry_count-1) # Will return value instead of list
                 self.trace_logger.debug(">Retry returned %s", val_retry)
 
                 # Test
@@ -178,7 +179,7 @@ class MODBUS():
         self.connection_check()
         try:
             val = self._client.read_input_registers(addr, 1)
-            self.trace_logger.debug("Reading reg %s, Val: %s, retry_count: %d", str(addr + 1), str(val[0]), retry_count)
+            self.trace_logger.debug("Reading reg %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
             self.logger.error("Value error occured while readying Register %s", addr)
@@ -192,7 +193,7 @@ class MODBUS():
                 log_msg = "None retuned for Register %s" % str(addr + 1)  # The '+1' is to counteract the '-1' fix in Bit class
                 self.logger.warning(log_msg)
                 time.sleep(0.01)
-                val_retry = self.read_reg(addr, retry_count=retry_count-1) # Will return value instead of list
+                val_retry = self.read_input_reg(addr, retry_count=retry_count-1) # Will return value instead of list
                 self.trace_logger.debug(">Retry returned %s", val_retry)
 
                 # Test
