@@ -8,6 +8,7 @@ from factory.bit import BIT             # Modbus Bit
 class SLD():
     name = "SLD"
     def __init__(self, modbus):
+        self.TaskReset =    BIT(819, modbus)
         self.Task1 =        BIT(800, modbus)
         self.status_ready = BIT(808, modbus)
         self.fault_status_1  = BIT(812, modbus) # 812, 813, 814 are faults

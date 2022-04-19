@@ -86,13 +86,10 @@ class Factory_MQTT():
 
     # Health check and any periodic jobs
     def update(self):
-        self.logger.debug("MQTT State: %s", self.client._state)
-        # check connection?
+        # Check Connection
+        if not self.client.is_connected():
+            self.logger.warn("MQTT Not connected!")
 
-    # TODO
-    # Check if connected
-    # Reconnect
-    # looping
 
     ## Callbacks
     def on_connect(self, client, userdata, flags, rc):

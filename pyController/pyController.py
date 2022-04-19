@@ -50,6 +50,8 @@ logging.getLogger("jobQueue").setLevel(logging.DEBUG)
 logging.getLogger("paho.mqtt.client").setLevel(logging.INFO)
 logging.getLogger("Factory_MQTT").setLevel(logging.INFO)
 logging.getLogger("Factory").setLevel(logging.DEBUG)
+logging.getLogger("pymodbus").setLevel(logging.INFO)
+
 
 
 class Orchastrator():
@@ -141,7 +143,7 @@ class Orchastrator():
         if self.mqtt is not None:
             inv = {}
             inv['Inventory'] = self.inventory.get_inventory()
-            logging.debug("Got inventory: %s", inv)
+            logging.info("Inventory: %s", inv['Inventory'])
 
             self.mqtt.publish('Factory/Inventory', payload=json.dumps(inv), qos=0)
         return
@@ -172,7 +174,7 @@ class Orchastrator():
         """Run the factory's update function.
            This should be called every 1-5 seconds"""
         factory_state = self.factory.update()
-        logging.info("Factory state: %s", factory_state)
+        logging.debug("Factory state: %s", factory_state)
 
         # If factory just finished processing
         if factory_state == 'ready' and self.last_factory_state == 'processing':
@@ -278,7 +280,7 @@ def main():
     mqtt.set_cancel_job_callback(orchastrator.cancel_job_id_callback)
     mqtt.set_cancel_order_callback(orchastrator.cancel_job_order_callback)
 
-    #add_job = {'job_id': 999, 'order_id': 10999, 'color': "white", 'cook_time': 3, 'slice': True}
+    #add_job = JobData(job_id=123, order_id=100, color='white', cook_time=12, sliced=True)
     #orchastrator.add_job_callback(add_job)
 
     logging.debug("Going into main loop")
@@ -298,8 +300,13 @@ def main():
         if count % 15 == 0:
             orchastrator.send_status()
 
-        if count > 60:
+        if count % 60 == 0:
             orchastrator.send_inventory()
+        
+        if count > 600:
+            if config['FACTORY_SIM'] == 'True':
+                logging.info("Resetting Inventory")
+                orchastrator.inventory.preset_inventory()
             count = 0
 
     # Shutdown

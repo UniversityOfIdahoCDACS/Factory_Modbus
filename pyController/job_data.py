@@ -43,5 +43,8 @@ class JobData():
         return f"job_id: {self.job_id}, order_id: {self.order_id}, color: {self.color}, cook time: {self.cook_time}, slice time {self.sliced}"
 
     def add_slot(self, slot):
-        """ Adds slot information (x, y) to job_data """
-        self.slot = slot
+        """ Adds slot information (x, y) to job_data 
+        param slot is a tuple (x, y)
+        """
+        self.slot_x = slot[0]
+        self.slot_y = slot[1]

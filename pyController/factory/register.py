@@ -14,8 +14,12 @@ class REGISTER():
 
     def read(self):
         """ Read value of this register """
-        self.value = self._mb.read_holding_reg(self._addr)
-        return self.value
+        value = self._mb.read_holding_reg(self._addr)
+        if value is None: # Bad read, return last value
+            return self.value
+        else:             # Return returned value
+            self.value = value
+            return value
 
 
     def write(self, value):
@@ -35,5 +39,9 @@ class REGISTER_Input():
 
     def read(self):
         """ Read value of this register """
-        self.value = self._mb.read_input_reg(self._addr)
-        return self.value
+        value = self._mb.read_input_reg(self._addr)
+        if value is None: # Bad read, return last value
+            return self.value
+        else:             # Return returned value
+            self.value = value
+            return value
