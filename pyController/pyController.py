@@ -278,7 +278,7 @@ def main():
     mqtt.set_cancel_job_callback(orchastrator.cancel_job_id_callback)
     mqtt.set_cancel_order_callback(orchastrator.cancel_job_order_callback)
 
-    #add_job = {'job_id': 999, 'order_id': 10999, 'color': "white", 'cook_time': 3, 'slice': True}
+    #add_job = JobData(job_id=123, order_id=100, color='white', cook_time=12, sliced=True)
     #orchastrator.add_job_callback(add_job)
 
     logging.debug("Going into main loop")

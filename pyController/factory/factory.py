@@ -144,8 +144,8 @@ class FACTORY():
         Expects self._job_data to be populated
         """
         # Parse Job data
-        x_value = self._job_data.slot_x
-        y_value = self._job_data.slot_y
+        x_value = self._job_data.slot_x + 1
+        y_value = self._job_data.slot_y + 1
         cook_time = self._job_data.cook_time
         do_slice = self._job_data.sliced
 

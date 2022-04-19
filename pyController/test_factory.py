@@ -8,7 +8,7 @@ import utilities
 from job_data import JobData
 from factory.factory import FACTORY
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger()
 logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
 # Create formatter
@@ -23,10 +23,10 @@ logger.addHandler(ch)
 
 
 def main():
+    logger.info("Starting test factory")
     config = utilities.load_env()
     f = FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
     logger.info("Initialized")
-    print("P Initialized")
 
     f_status = f.status()
     logger.info("Factorystatus %s", f_status)
@@ -39,7 +39,8 @@ def main():
         f.update()
         sleep(2)
     else:
-        print("Factory not ready")
+        logger.error("Factory not ready")
+        return 1
     
     status = ""
     while status != 'ready':
