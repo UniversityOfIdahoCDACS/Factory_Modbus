@@ -26,8 +26,8 @@ class MODBUS():
 
         # Logger: create rotating file handler
         script_path = os.path.dirname(os.path.realpath(__file__))
-        utilities.create_log_dir(script_path + "\logs")
-        log_file_path = script_path + "\logs/modbus.log"
+        utilities.create_log_dir(script_path + "/logs")
+        log_file_path = script_path + "/logs/modbus.log"
         # Create formatter
         formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] - %(message)s')
         # Create File handler
@@ -76,7 +76,7 @@ class MODBUS():
             self.logger.error("Value error occured while reading coil %s", addr)
             self.trace_logger.error(e)
             self.trace_logger.error("Value error occured while reading coil %s", addr)
-            return False
+            return None
         except AttributeError as e:
             # This can occure when _sock is none in client.py
             self.logger.error(e)
@@ -94,19 +94,9 @@ class MODBUS():
                 time.sleep(0.01)
                 val_retry = self.read_coil(addr, retry_count=retry_count-1) # Will return value instead of list
                 self.trace_logger.debug(">Retry returned %s", val_retry)
-
-                # Test
-                if val_retry is None:
-                    if retry_count < 2:
-                        # This is a retry call. Return None
-                        return None
-                    else:
-                        # This is the main call. Return value as all retries have returned None
-                        return False # Return False value as a default
-                else:
-                    # log_msg = f"rc: {retry_count} | r.out | type: {type(val_retry)} | value: {val_retry}"
-                    # self.logger.info(log_msg)
-                    return val_retry
+                return val_retry
+            else:
+                return None
         else:
             return val[0]
     
@@ -138,19 +128,9 @@ class MODBUS():
                 time.sleep(0.01)
                 val_retry = self.read_discreet_input(addr, retry_count=retry_count-1) # Will return value instead of list
                 self.trace_logger.debug(">Retry returned %s", val_retry)
-
-                # Test
-                if val_retry is None:
-                    if retry_count < 2:
-                        # This is a retry call. Return None
-                        return None
-                    else:
-                        # This is the main call. Return value as all retries have returned None
-                        return False # Return False value as a default
-                else:
-                    # log_msg = f"rc: {retry_count} | r.out | type: {type(val_retry)} | value: {val_retry}"
-                    # self.logger.info(log_msg)
-                    return val_retry
+                return val_retry
+            else:
+                return None
         else:
             return val[0]
 
@@ -181,19 +161,9 @@ class MODBUS():
                 time.sleep(0.01)
                 val_retry = self.read_holding_reg(addr, retry_count=retry_count-1) # Will return value instead of list
                 self.trace_logger.debug(">Retry returned %s", val_retry)
-
-                # Test
-                if val_retry is None:
-                    if retry_count < 2:
-                        # This is a retry call. Return None
-                        return None
-                    else:
-                        # This is the main call. Return value as all retries have returned None
-                        return 0 # Return False value as a default
-                else:
-                    # log_msg = f"rc: {retry_count} | r.out | type: {type(val_retry)} | value: {val_retry}"
-                    # self.logger.info(log_msg)
-                    return val_retry
+                return val_retry
+            else:
+                return None
         else:
             return val[0]
         
@@ -224,19 +194,9 @@ class MODBUS():
                 time.sleep(0.01)
                 val_retry = self.read_input_reg(addr, retry_count=retry_count-1) # Will return value instead of list
                 self.trace_logger.debug(">Retry returned %s", val_retry)
-
-                # Test
-                if val_retry is None:
-                    if retry_count < 2:
-                        # This is a retry call. Return None
-                        return None
-                    else:
-                        # This is the main call. Return value as all retries have returned None
-                        return 0 # Return False value as a default
-                else:
-                    # log_msg = f"rc: {retry_count} | r.out | type: {type(val_retry)} | value: {val_retry}"
-                    # self.logger.info(log_msg)
-                    return val_retry
+                return val_retry
+            else:
+                return None
         else:
             return val[0]
 

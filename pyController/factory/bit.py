@@ -38,8 +38,12 @@ class BIT():
 
     def read(self):
         """ Read value of this bit """
-        self.value = self._mb.read_coil(self._addr)
-        return self.value
+        value = self._mb.read_coil(self._addr)
+        if value is None: # Bad read, return last value
+            return self.value
+        else:             # Return returned value
+            self.value = value
+            return value
 
 
     def write(self, value):
@@ -59,5 +63,9 @@ class BIT_DInput():
 
     def read(self):
         """ Read discret input value of this bit """
-        self.value = self._mb.read_discreet_input(self._addr)
-        return self.value
+        value = self._mb.read_discreet_input(self._addr)
+        if value is None: # Bad read, return last value
+            return self.value
+        else:             # Return returned value
+            self.value = value
+            return value
