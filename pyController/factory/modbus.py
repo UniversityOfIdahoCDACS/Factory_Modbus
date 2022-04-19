@@ -6,7 +6,7 @@ import time
 import os
 import logging
 from logging.handlers import RotatingFileHandler
-from pyModbusTCP.client import ModbusClient
+from pymodbus.client.sync import ModbusTcpClient
 import utilities
 
 #*****************************
@@ -42,7 +42,7 @@ class MODBUS():
         self.trace_logger.info("Modbus connecting")
 
         # Connect to _client
-        self._client = ModbusClient(host=ip, port=port, unit_id=1, auto_open=True)  # Always connect
+        self._client = ModbusTcpClient(host=ip, port=port)
         self._ip = ip
         self._port = port
         self.connection_check()
@@ -59,10 +59,9 @@ class MODBUS():
         """ Checks connection to PLC controller
         Raises an exception if connection is closed
         """
-        if not self._client.is_open():
-            if not self._client.open():
-                print("Unable to connect to %s:%s" % (self._ip, self._port))
-                raise Exception("Unable to connecto to PLC controller")
+        if not self._client.connect():
+            print("Unable to connect to %s:%s" % (self._ip, self._port))
+            raise Exception("Unable to connecto to PLC controller")
         return True
 
     def read_coil(self, addr, retry_count=2):
@@ -70,6 +69,7 @@ class MODBUS():
         self.trace_logger.debug("Reading coil %s", str(addr + 1))
         try:
             val = self._client.read_coils(addr, 1)
+            val = val.bits
             self.trace_logger.debug(">Reading coil %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
@@ -138,6 +138,7 @@ class MODBUS():
         self.connection_check()
         try:
             val = self._client.read_holding_registers(addr, 1)
+            val = val.registers
             self.trace_logger.debug("Reading reg %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
@@ -203,10 +204,10 @@ class MODBUS():
     def write_coil(self, addr, value):
         self.connection_check()
         self.trace_logger.debug("Writing %d to addr %s", value, str(addr + 1))
-        responce = self._client.write_single_coil(addr, value)
+        responce = self._client.write_coil(addr, value)
         return responce
 
     def write_reg(self, addr, value):
         self.connection_check()
         self.trace_logger.debug("Writing %d to addr %s", value, str(addr + 1))
-        return self._client.write_single_register(addr, value)
+        return self._client.write_register(addr, value)

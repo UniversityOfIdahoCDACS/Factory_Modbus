@@ -22,6 +22,8 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
+logging.getLogger("pymodbus").setLevel(logging.INFO)
+
 def main():
     logger.info("Starting test factory")
     config = utilities.load_env()

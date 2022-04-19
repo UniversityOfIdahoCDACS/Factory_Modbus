@@ -50,6 +50,8 @@ logging.getLogger("jobQueue").setLevel(logging.DEBUG)
 logging.getLogger("paho.mqtt.client").setLevel(logging.INFO)
 logging.getLogger("Factory_MQTT").setLevel(logging.INFO)
 logging.getLogger("Factory").setLevel(logging.DEBUG)
+logging.getLogger("pymodbus").setLevel(logging.INFO)
+
 
 
 class Orchastrator():
