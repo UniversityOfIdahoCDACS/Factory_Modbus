@@ -138,6 +138,12 @@ class Orchastrator():
             self.send_job_notice(notice_msg)
 
 
+    def factory_command_callback(self, command, **args):
+        """ Calls factory.command with supplied args """
+        logging.debug("Factory command: %s, args: %r", command, args)
+        if command == 'reset_inventory':
+            self.inventory.preset_inventory()
+
     def send_inventory(self):
         # Get inventory
         if self.mqtt is not None:
@@ -279,6 +285,7 @@ def main():
     mqtt.set_add_job_callback(orchastrator.add_job_callback)
     mqtt.set_cancel_job_callback(orchastrator.cancel_job_id_callback)
     mqtt.set_cancel_order_callback(orchastrator.cancel_job_order_callback)
+    mqtt.set_factory_command_callback(orchastrator.factory_command_callback)
 
     #add_job = JobData(job_id=123, order_id=100, color='white', cook_time=12, sliced=True)
     #orchastrator.add_job_callback(add_job)

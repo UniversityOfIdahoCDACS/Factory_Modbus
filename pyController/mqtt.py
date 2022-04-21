@@ -40,6 +40,7 @@ class Factory_MQTT():
         self.add_job_callback = None
         self.cancel_job_callback = None
         self.cancel_order_callback = None
+        self.factory_command_callback = None
 
 
     def connect(self):
@@ -140,12 +141,15 @@ class Factory_MQTT():
                     else: # No error
                         self.add_job_callback(job_data)
 
-
             elif mypayload['msg_type'] == 'cancel_job_id':
                 self.cancel_job_callback(mypayload['job_id'])
 
             elif mypayload['msg_type'] == 'cancel_order_id':
                 self.cancel_job_callback(mypayload['order_id'])
+
+            elif mypayload['msg_type'] == 'reset_inventory':
+                # reset_inventory is a universal command function for factory related commands
+                self.factory_command_callback(command='reset_inventory')
 
             else:
                 self.publish("Factory/Job_notice", f"Invalid message type {mypayload['msg_type']}")
@@ -153,18 +157,23 @@ class Factory_MQTT():
 
 
     def set_add_job_callback(self, func):
+        """ Sets pyController.add_job_callback() function callback"""
         self.add_job_callback = func
 
     def set_cancel_job_callback(self, func):
+        """ Sets pyController.cancel_job_callback() function callback"""
         self.cancel_job_callback = func
 
     def set_cancel_order_callback(self, func):
+        """ Sets pyController.cancel_order_callback() function callback"""
         self.cancel_order_callback = func
-
+    
+    def set_factory_command_callback(self, func):
+        """ Sets factory.command() functiion callback"""
+        self.factory_command_callback = func
 
     def on_disconnect(self):
         pass
-
 
 
 if __name__ == '__main__':
