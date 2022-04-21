@@ -18,28 +18,31 @@ order_id = 8000
 
 app = Flask('FactoryAdmin')
 
-class webapp_callbacks():
+class webapp_storage():
+    """ This class holds function callbacks, objects and attributes.
+    These may be needed by both this webapp and outside objects like pyController
+    Using this as flask apps can't easily be packaged into a class
+    """
     def __init__(self):
         self._add_order_cb = None
         self._factory_command_cb = None
         self.orchastrator = None
 
-    def set_add_order_cb(self, func):
-        self._add_order_cb = func
+    def set_orchastrator(self, obj):
+        """ Called to set the orchastrator object """
+        self.orchastrator = obj
 
     def add_order_cb(self, job_data):
-        if self._add_order_cb:
-            self._add_order_cb(job_data)
-
-    def set_factory_command_cb(self, func):
-        self._factory_command_cb = func
+        """ Adds job to orchastrator """
+        if self.orchastrator:
+            self.orchastrator.add_job_callback(job_data)
 
     def factory_command(self):
-        if self._factory_command_cb:
-            self._factory_command_cb()
+        """ Universal factory command function in orchastrator"""
+        if self.orchastrator:
+            self.orchastrator.factory_command_callback()
 
-    def set_orchastrator(self, func):
-        self.orchastrator = func
+
 
 
 def worker():
@@ -56,7 +59,8 @@ def start_webapp():
 
 def stop_webapp():
     """ Stop the webserver """
-    pass
+    print("Stop webapp called.")
+    worker_thread.terminate()
 
 
 @app.route("/")

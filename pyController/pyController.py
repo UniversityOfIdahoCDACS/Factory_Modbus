@@ -284,7 +284,6 @@ def main():
 
     # Setup webadmin object
     #webadmin.start_webapp()
-    #webadmin.callbacks.add_order_cb(orchastrator.add_job_callback)
     #webadmin.callbacks.set_orchastrator(orchastrator)
 
     # set mqtt orchastrator callbacks
