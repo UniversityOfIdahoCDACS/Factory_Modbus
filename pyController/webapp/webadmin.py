@@ -16,7 +16,8 @@ job_id = 500
 order_id = 8000
 
 
-app = Flask('FactoryAdmin')
+script_dir = os.path.dirname(os.path.realpath(__file__))    # Directory of this script
+app = Flask('FactoryAdmin', static_url_path="/static", static_folder=script_dir + '/static')
 
 class webapp_storage():
     """ This class holds function callbacks, objects and attributes.
@@ -27,6 +28,7 @@ class webapp_storage():
         self._add_order_cb = None
         self._factory_command_cb = None
         self.orchastrator = None
+        self.server = None
 
     def set_orchastrator(self, obj):
         """ Called to set the orchastrator object """
@@ -57,10 +59,15 @@ def start_webapp():
     """ Start the webserver """
     worker_thread.start()
 
+def start_webapp2():
+    """ Start the webserver """
+    callbacks.server = waitress.create_server(app, host='0.0.0.0', port=10002)
+
+
 def stop_webapp():
     """ Stop the webserver """
     print("Stop webapp called.")
-    worker_thread.terminate()
+    callbacks.server.close()
 
 
 @app.route("/")
@@ -113,8 +120,10 @@ def favicon():
     return send_file('favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
-callbacks = webapp_callbacks()
+callbacks = webapp_storage()
 worker_thread = threading.Thread(target=worker)
 
 if __name__ == "__main__":
-    worker()
+    #worker()
+    start_webapp2()
+    print("Heloo")
