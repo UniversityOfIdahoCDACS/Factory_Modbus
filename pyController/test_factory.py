@@ -5,9 +5,10 @@ import logging
 from time import sleep
 
 import utilities
+from job_data import JobData
 from factory.factory import FACTORY
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger()
 logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
 # Create formatter
@@ -21,26 +22,32 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
+logging.getLogger("pymodbus").setLevel(logging.INFO)
+
 def main():
+    logger.info("Starting test factory")
     config = utilities.load_env()
     f = FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
     logger.info("Initialized")
-    print("P Initialized")
 
     f_status = f.status()
     logger.info("Factorystatus %s", f_status)
 
+    job_data = JobData(job_id=123, order_id=100, color='red', cook_time=12, sliced=True)
+    job_data.add_slot((3,2))
 
     if f_status == 'ready':
-        # order
-        f.order(2, 1, 2, True)
+        f.order(job_data)
         f.update()
         sleep(2)
     else:
-        print("Factory not ready")
+        logger.error("Factory not ready")
+        return 1
     
-    while f.status() != 'ready':
-        logger.info("Factory Status: %s", f.status())
+    status = ""
+    while status != 'ready':
+        status = f.status()
+        logger.info("Factory Status: %s", status)
         f.update()
         sleep(1)
         

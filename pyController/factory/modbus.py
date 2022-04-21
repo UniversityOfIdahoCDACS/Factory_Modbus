@@ -6,7 +6,8 @@ import time
 import os
 import logging
 from logging.handlers import RotatingFileHandler
-from pyModbusTCP.client import ModbusClient
+from pymodbus.client.sync import ModbusTcpClient
+import utilities
 
 #*****************************
 #*          MODBUS           *
@@ -14,26 +15,22 @@ from pyModbusTCP.client import ModbusClient
 class MODBUS():
     # REF: https://pymodbus.readthedocs.io/en/latest/readme.html
     def __init__(self, ip, port):
-        print("Modbus initializing")
-
         # Setup logging
-        self.logger = logging.getLogger('factory_modbus')
+        self.logger = logging.getLogger('modbus')
         self.logger.setLevel(logging.DEBUG) # sets default logging level for this module
 
-        # Create formatter
-        formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] - %(message)s')
-        # Logger: create console handle
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.WARNING)     # set logging level for console
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
-
         # Setup trace debugger
-        self.trace_logger = logging.getLogger('factory_modbus_trace')
+        self.trace_logger = logging.getLogger('modbus_trace')
         self.trace_logger.setLevel(logging.DEBUG) # sets default logging level for this module
+        self.trace_logger.propagate = False       # Prevents this logger from outputing to root logger
 
         # Logger: create rotating file handler
-        log_file_path = os.path.dirname(os.path.realpath(__file__)) + "/logs/modbus.log"
+        script_path = os.path.dirname(os.path.realpath(__file__))
+        utilities.create_log_dir(script_path + "/logs")
+        log_file_path = script_path + "/logs/modbus.log"
+        # Create formatter
+        formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] - %(message)s')
+        # Create File handler
         rfh = RotatingFileHandler(log_file_path)
         rfh.maxBytes = 1024*1024          # maximum size of a log before being rotated
         rfh.backupCount = 2               # how many rotated files to keep
@@ -41,12 +38,17 @@ class MODBUS():
         rfh.setLevel(logging.DEBUG)     # set level for file logging
         self.trace_logger.addHandler(rfh)          # add filehandle to logger
 
+        self.logger.info("Modbus connecting")
+        self.trace_logger.info("Modbus connecting")
 
         # Connect to _client
-        self._client = ModbusClient(host=ip, port=port, unit_id=1, auto_open=True)  # Always connect
+        self._client = ModbusTcpClient(host=ip, port=port)
         self._ip = ip
         self._port = port
         self.connection_check()
+
+        self.logger.info("Modbus Initialized")
+        self.trace_logger.info("Modbus Initialized")
 
 
     def __del__(self):
@@ -57,21 +59,32 @@ class MODBUS():
         """ Checks connection to PLC controller
         Raises an exception if connection is closed
         """
-        if not self._client.is_open():
-            if not self._client.open():
-                print("Unable to connect to %s:%s" % (self._ip, self._port))
-                raise Exception("Unable to connecto to PLC controller")
+        if not self._client.connect():
+            print("Unable to connect to %s:%s" % (self._ip, self._port))
+            raise Exception("Unable to connecto to PLC controller")
         return True
 
     def read_coil(self, addr, retry_count=2):
         self.connection_check()
+        self.trace_logger.debug("Reading coil %s", str(addr + 1))
         try:
             val = self._client.read_coils(addr, 1)
-            #self.logger.debug("Reading coil %s, Val: %s", addr, str(val[0]))
+            val = val.bits
+            self.trace_logger.debug(">Reading coil %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
-            self.logger.error("Value error occured while readying coil %s", addr)
-            return False
+            self.logger.error("Value error occured while reading coil %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Value error occured while reading coil %s", addr)
+            return None
+        except AttributeError as e:
+            # This can occure when _sock is none in client.py
+            self.logger.error(e)
+            self.logger.error("Attribute error occured while reading coil %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Attribute error occured while reading coil %s", addr)
+            val = None
+
 
         # val validation & conversion
         if val is None:
@@ -80,38 +93,66 @@ class MODBUS():
                 self.logger.warning(log_msg)
                 time.sleep(0.01)
                 val_retry = self.read_coil(addr, retry_count=retry_count-1) # Will return value instead of list
+                self.trace_logger.debug(">Retry returned %s", val_retry)
+                return val_retry
+            else:
+                return None
+        else:
+            return val[0]
+    
+    def read_discreet_input(self, addr, retry_count=2):
+        """ Read discreet input """
+        self.connection_check()
+        try:
+            val = self._client.read_discrete_inputs(addr, 1)
+            self.trace_logger.debug("Reading coil %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
+        except ValueError as e:
+            self.logger.error(e)
+            self.logger.error("Value error occured while reading coil %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Value error occured while reading coil %s", addr)
+            return False
+        except AttributeError as e:
+            # This can occure when _sock is none in client.py
+            self.logger.error(e)
+            self.logger.error("Attribute error occured while reading input %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Attribute error occured while reading input %s", addr)
+            val = None
 
-                # Test
-                if val_retry is None:
-                    if retry_count < 2:
-                        # This is a retry call. Return None
-                        return None
-                    else:
-                        # This is the main call. Return value as all retries have returned None
-                        return False # Return False value as a default
-                else:
-                    # log_msg = f"rc: {retry_count} | r.out | type: {type(val_retry)} | value: {val_retry}"
-                    # self.logger.info(log_msg)
-                    return val_retry
+        # val validation & conversion
+        if val is None:
+            if retry_count > 0:
+                log_msg = "None retuned for coil %s" % str(addr + 1)  # The '+1' is to counteract the '-1' fix in Bit class
+                self.logger.warning(log_msg)
+                time.sleep(0.01)
+                val_retry = self.read_discreet_input(addr, retry_count=retry_count-1) # Will return value instead of list
+                self.trace_logger.debug(">Retry returned %s", val_retry)
+                return val_retry
+            else:
+                return None
         else:
             return val[0]
 
-
-    def write_coil(self, addr, value):
-        self.connection_check()
-        #print ("Writing")
-        responce = self._client.write_single_coil(addr, value)
-        return responce
-
-    def read_reg(self, addr, retry_count=2):
+    def read_holding_reg(self, addr, retry_count=2):
         self.connection_check()
         try:
-            val = self._client.read_coils(addr, 1)
-            #self.logger.debug("Reading Register %s, Val: %s", addr, str(val[0]))
+            val = self._client.read_holding_registers(addr, 1)
+            val = val.registers
+            self.trace_logger.debug("Reading reg %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
         except ValueError as e:
             self.logger.error(e)
-            self.logger.error("Value error occured while readying Register %s", addr)
+            self.logger.error("Value error occured while reading Register %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Value error occured while reading Register %s", addr)
             return 0
+        except AttributeError as e:
+            # This can occure when _sock is none in client.py
+            self.logger.error(e)
+            self.logger.error("Attribute error occured while reading reg %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Attribute error occured while reading reg %s", addr)
+            val = None
 
         # val validation & conversion
         if val is None:
@@ -119,25 +160,54 @@ class MODBUS():
                 log_msg = "None retuned for Register %s" % str(addr + 1)  # The '+1' is to counteract the '-1' fix in Bit class
                 self.logger.warning(log_msg)
                 time.sleep(0.01)
-                val_retry = self.read_reg(addr, retry_count=retry_count-1) # Will return value instead of list
+                val_retry = self.read_holding_reg(addr, retry_count=retry_count-1) # Will return value instead of list
+                self.trace_logger.debug(">Retry returned %s", val_retry)
+                return val_retry
+            else:
+                return None
+        else:
+            return val[0]
+        
+    def read_input_reg(self, addr, retry_count=2):
+        self.connection_check()
+        try:
+            val = self._client.read_input_registers(addr, 1)
+            self.trace_logger.debug("Reading reg %s,\tVal: %s,\tretry_count: %d", str(addr + 1), str(val), retry_count)
+        except ValueError as e:
+            self.logger.error(e)
+            self.logger.error("Value error occured while reading Register %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Value error occured while reading Register %s", addr)
+            return 0
+        except AttributeError as e:
+            # This can occure when _sock is none in client.py
+            self.logger.error(e)
+            self.logger.error("Attribute error occured while reading input reg %s", addr)
+            self.trace_logger.error(e)
+            self.trace_logger.error("Attribute error occured while reading inputreg %s", addr)
+            val = None
 
-                # Test
-                if val_retry is None:
-                    if retry_count < 2:
-                        # This is a retry call. Return None
-                        return None
-                    else:
-                        # This is the main call. Return value as all retries have returned None
-                        return 0 # Return False value as a default
-                else:
-                    # log_msg = f"rc: {retry_count} | r.out | type: {type(val_retry)} | value: {val_retry}"
-                    # self.logger.info(log_msg)
-                    return val_retry
+        # val validation & conversion
+        if val is None:
+            if retry_count > 0:
+                log_msg = "None retuned for Register %s" % str(addr + 1)  # The '+1' is to counteract the '-1' fix in Bit class
+                self.logger.warning(log_msg)
+                time.sleep(0.01)
+                val_retry = self.read_input_reg(addr, retry_count=retry_count-1) # Will return value instead of list
+                self.trace_logger.debug(">Retry returned %s", val_retry)
+                return val_retry
+            else:
+                return None
         else:
             return val[0]
 
-
-    def write_reg(self, addr, val):
+    def write_coil(self, addr, value):
         self.connection_check()
-        #print("Modbus write reg value: %r" % val)
-        return self._client.write_single_register(addr, val)
+        self.trace_logger.debug("Writing %d to addr %s", value, str(addr + 1))
+        responce = self._client.write_coil(addr, value)
+        return responce
+
+    def write_reg(self, addr, value):
+        self.connection_check()
+        self.trace_logger.debug("Writing %d to addr %s", value, str(addr + 1))
+        return self._client.write_register(addr, value)

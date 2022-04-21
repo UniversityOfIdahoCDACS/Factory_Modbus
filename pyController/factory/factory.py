@@ -144,8 +144,8 @@ class FACTORY():
         Expects self._job_data to be populated
         """
         # Parse Job data
-        x_value = self._job_data.slot[0]
-        y_value = self._job_data.slot[1]
+        x_value = self._job_data.slot_x + 1
+        y_value = self._job_data.slot_y + 1
         cook_time = self._job_data.cook_time
         do_slice = self._job_data.sliced
 
@@ -161,10 +161,10 @@ class FACTORY():
             hbw_ready_status = self._hbw.IsReady()
             # Run _hbw
             if hbw_ready_status == True:
-                print("_hbw Is Ready")
+                print("hbw Is Ready")
                 self._hbw.StartTask1(x_value, y_value) #_hbw STARTS
             else:
-                print("_hbw Is Not Ready")
+                print("hbw Is Not Ready")
 
             # Run _vgr and _hbw return
             while True:
@@ -186,7 +186,7 @@ class FACTORY():
             while True:
                 mpo_start_light = self._mpo.StartSensorStatus()
                 if mpo_start_light == False:
-                    print("Starting _mpo task")
+                    print("Starting mpo task")
                     time.sleep(1)
                     self._mpo.StartTask1()#Add values to change
                     break

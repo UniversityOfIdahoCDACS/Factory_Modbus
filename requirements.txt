@@ -1,4 +1,4 @@
-pyModbusTCP
+pymodbus>=2.5.3
 paho-mqtt
 python-dotenv
 opencv-python-headless
