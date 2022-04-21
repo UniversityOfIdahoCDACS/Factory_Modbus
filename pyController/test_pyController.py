@@ -7,6 +7,7 @@ from job_data import JobData
 from inventory import Inventory
 from factory.factory_sim2 import FactorySim2    # Simulated factory
 from pyController import Orchastrator
+from pyController.webapp import webadmin
 
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.DEBUG) # sets default logging level for this module
@@ -27,6 +28,11 @@ def main():
 
     # Setup orchastrator object
     orchastrator = Orchastrator(mqtt=None, queue=job_queue, inventory=inventory, factory=factory)
+
+    # Setup webadmin object
+    #webadmin.start_webapp()
+    #webadmin.callbacks.add_order_cb(orchastrator.add_job_callback)
+
 
     if True:
         logger.info("Running Tests")

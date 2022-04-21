@@ -8,6 +8,8 @@ After=multi-user.target
 
 [Service]
 # Command to execute when the service is started. Added in override file
+WorkingDirectory=/home/factory/Mini-Factory-Python-Controller
+ExecStartPre=/usr/bin/git pull
 ExecStart=/usr/bin/python3 /home/factory/Mini-Factory-Python-Controller/pyController/pyController.py
 
 # Disable Python's buffering of STDOUT and STDERR, so that output from the
