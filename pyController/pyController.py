@@ -14,6 +14,7 @@ from mqtt import Factory_MQTT
 import webcam
 from factory.factory import FACTORY             # Real factory
 from factory.factory_sim2 import FactorySim2    # Simulated factory
+from webapp import webadmin
 
 
 #*********************************************
@@ -280,6 +281,11 @@ def main():
 
     # Setup orchastrator object
     orchastrator = Orchastrator(mqtt=mqtt, queue=job_queue, inventory=inventory, factory=factory)
+
+    # Setup webadmin object
+    #webadmin.start_webapp()
+    #webadmin.callbacks.add_order_cb(orchastrator.add_job_callback)
+    #webadmin.callbacks.set_orchastrator(orchastrator)
 
     # set mqtt orchastrator callbacks
     mqtt.set_add_job_callback(orchastrator.add_job_callback)

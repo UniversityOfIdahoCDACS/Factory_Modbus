@@ -2,4 +2,5 @@ pymodbus>=2.5.3
 paho-mqtt
 python-dotenv
 opencv-python-headless
-flask
+flask>=2.1.1
+waitress>=2.1.1
