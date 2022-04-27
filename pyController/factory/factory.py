@@ -117,7 +117,7 @@ class FACTORY():
         """ Sends reset task to all modules """
         modules = [self._hbw, self._vgr, self._mpo, self._sld, self._ssc, self._ssc_webcam]
         for module in modules:
-            module.reset()
+            module.Reset()
 
     def stop(self):
         """ Stops factory opperations """
