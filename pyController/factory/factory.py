@@ -41,6 +41,7 @@ class FACTORY():
         # Factory processing variables
         self._factory_state = 'ready'       # Status of the factory
         self._processing_thread = None      # Tread object when active
+        self._processing_thread_stop = False # Stop flag for processing thread
         self._job_data = None               # Holds job data such as x, y, cook time and slice info
 
         self.logger.debug("Factory Modbus Initialized")
@@ -86,6 +87,8 @@ class FACTORY():
                                 'modules_faulted': modules_faulted_status, # List of bools of faulted modules
                                 'modules_ready': modules_ready_status,     # List of bools of ready modules
                                 'modules_statuses': modules_statuses }     # List: module_name, faulted, ready
+        
+
 
         return factory_status
 
@@ -93,10 +96,23 @@ class FACTORY():
         """ Calls Factory.status() and returns detailed information """
         self.status()
         return self._status_details
-    
+
+    def _check_factory_faults(self):
+        """ Checks all modules for faults.
+        Return true if any faulted
+        """
+        modules = [self._hbw, self._vgr, self._mpo, self._sld]
+        for module in modules:
+            if module.IsFault():
+                self.logger.warning("Factroy Module %s in fault. Halted factory processing", module.name)
+                self._processing_thread_stop = True
+                self._factory_state == 'fault'
+                return True
+        return False
+
     def stop(self):
         """ Stops factory opperations """
-        pass
+        self._processing_thread_stop = True
 
     def update(self):
         """
@@ -111,6 +127,7 @@ class FACTORY():
 
                 # Start thread
                 self.logger.info("Starting processing thread")
+                self._processing_thread_stop = False
                 self._processing_thread = threading.Thread(target=self._process_order)
                 self._processing_thread.start()
 
@@ -125,6 +142,13 @@ class FACTORY():
 
         elif self._factory_state == 'fault':
             self.logger.debug("Factory in fault state")
+
+            # check to see if factory recovered
+            if self.status() == 'ready':
+                # Reset processing variables. Assuming clean slate
+                self._factory_state = 'ready'
+                self._processing_thread_stop = True  # Probably redundant in most cases
+                self._job_data = None
 
         else:
             raise Exception("Invalid factory_state set")
@@ -169,48 +193,79 @@ class FACTORY():
                 print("hbw Is Not Ready")
 
             # Run _vgr and _hbw return
-            while True:
+            while not self._processing_thread_stop:
                 hbw_ready_status = self._hbw.IsReady()
 
                 if self._hbw.CurrentProgress() == 80:
                     self._vgr.StartTask1() #_vgr STARTS
                 elif hbw_ready_status == True:
                     time.sleep(2)
-                    self._hbw.StartTask2(x_value, y_value)#Return Pallet
+                    self._hbw.StartTask2(x_value, y_value) # Return Pallet
                     break
                 time.sleep(0.1)
 
+                if self._check_factory_faults():
+                    return
+
+
         def stage_2():
             """
-            Stage 2
+            Stage 2 - Wait for puck to arrive at MPO and start MPO
             """
             print("Stage 2 entered")
-            while True:
+            while not self._processing_thread_stop:
                 mpo_start_light = self._mpo.StartSensorStatus()
                 if mpo_start_light == False:
                     print("Starting mpo task")
                     time.sleep(1)
-                    self._mpo.StartTask1()#Add values to change
+                    self._mpo.StartTask1() #Add values to change
                     break
                 time.sleep(0.1)
 
+                if self._check_factory_faults():
+                    return
+
         def stage_3():
             """
-            Stage 3
+            Stage 3 - Wait for MPO finish & start SLD task
             """
             print("Stage 3 entered")
-            while True:
+            while not self._processing_thread_stop:
                 mpo_end_light = self._mpo.EndSensorStatus()
-                #print("stage 3 end light: "+mpo_end_light)
                 if mpo_end_light == False:
                     self._sld.StartTask1()
                     break
                 time.sleep(0.1)
 
-        stage_1(x_value, y_value)
-        stage_2()
-        stage_3()
-        self._job_data = None # Clear job data that just completed
+                if self._check_factory_faults():
+                    return
+
+        def stage_4():
+            """
+            Stage 4 - Wait for SLD to finish
+            """
+            print("Stage 4 entered")
+            while not self._processing_thread_stop and not self._sld.IsReady():
+                time.sleep(0.1)
+
+                if self._check_factory_faults():
+                    return
+
+
+        if not self._processing_thread_stop:
+            stage_1(x_value, y_value)
+
+        if not self._processing_thread_stop:
+            stage_2()
+
+        if not self._processing_thread_stop:
+            stage_3()
+
+        if not self._processing_thread_stop:
+            stage_4()
+
+        self._job_data = None        # Clear job data that just completed
+        self._processing_thread_stop # Clear stop flag
         return
 
     def _restock(self):
