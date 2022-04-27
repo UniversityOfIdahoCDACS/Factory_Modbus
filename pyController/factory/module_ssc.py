@@ -47,6 +47,10 @@ class SSC_LED():
         """
         return False
 
+    def Reset(self):
+        """ Reset Module """
+        self.LEDclear()
+
     def SSC_Status(self):
         """ Show bit & register statuses """
         print("************************")

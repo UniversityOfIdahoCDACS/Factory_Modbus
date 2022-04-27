@@ -50,7 +50,7 @@ class FactorySim2():
                 self.factory_state = 'processing'
                 # Start thread
                 logger.info("Starting processing thread")
-                self.processing_thread = threading.Thread(target=self.process)
+                self.processing_thread = threading.Thread(target=self._process_order)
                 self.processing_thread.start()
 
         elif self.factory_state == 'processing':
@@ -77,7 +77,7 @@ class FactorySim2():
             self.processing_thread.join()
 
 
-    def process(self):
+    def _process_order(self):
         """ Simulate processing """
         wait_time = self.processing_time / 4
 

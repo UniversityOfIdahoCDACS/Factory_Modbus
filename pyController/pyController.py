@@ -33,7 +33,7 @@ formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] - %(me
 # Logger: create rotating file handler
 script_dir = os.path.dirname(os.path.realpath(__file__))    # Directory this script is running from
 utilities.create_log_dir(script_dir + "/logs")                    # creates /logs directory if missing
-rfh = RotatingFileHandler(script_dir + "/logs/app_rot.log")
+rfh = RotatingFileHandler(script_dir + "/logs/app.log")
 rfh.maxBytes = 1024*1024          # maximum size of a log before being rotated
 rfh.backupCount = 2               # how many rotated files to keep
 rfh.setFormatter(formatter)     # set format
