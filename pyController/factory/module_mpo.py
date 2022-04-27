@@ -28,6 +28,10 @@ class MPO():
         """ Return True if module is in a fault state """
         return self.fault_status.read()
 
+    def Reset(self):
+        """ Reset Module """
+        self.status_reset.pulse()
+
     def StartTask1(self):
         """ Start Task 1
         Start cooking operation

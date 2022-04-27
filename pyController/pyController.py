@@ -33,7 +33,7 @@ formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] - %(me
 # Logger: create rotating file handler
 script_dir = os.path.dirname(os.path.realpath(__file__))    # Directory this script is running from
 utilities.create_log_dir(script_dir + "/logs")                    # creates /logs directory if missing
-rfh = RotatingFileHandler(script_dir + "/logs/app_rot.log")
+rfh = RotatingFileHandler(script_dir + "/logs/app.log")
 rfh.maxBytes = 1024*1024          # maximum size of a log before being rotated
 rfh.backupCount = 2               # how many rotated files to keep
 rfh.setFormatter(formatter)     # set format
@@ -261,7 +261,7 @@ def main():
     logging.debug("Creating factory object")
     if config['FACTORY_SIM'] == 'True': # Use FactorySim2
         logging.info("Using Factory sim")
-        factory = FactorySim2()
+        factory = FactorySim2(processing_time=30)
     else:
         logging.info("Using Factory Modbus")
         factory = FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
@@ -283,9 +283,8 @@ def main():
     orchastrator = Orchastrator(mqtt=mqtt, queue=job_queue, inventory=inventory, factory=factory)
 
     # Setup webadmin object
-    #webadmin.start_webapp()
-    #webadmin.callbacks.add_order_cb(orchastrator.add_job_callback)
-    #webadmin.callbacks.set_orchastrator(orchastrator)
+    webadmin.webapp_storage.set_orchastrator(orchastrator)
+    webadmin.start_webapp()
 
     # set mqtt orchastrator callbacks
     mqtt.set_add_job_callback(orchastrator.add_job_callback)

@@ -27,6 +27,20 @@ class FactorySim2():
         """ Returns the state of the factory """
         return self.factory_state
 
+    def status_detailed(self):
+        """ Calls Factory.status() and returns detailed information """
+        # Detailed status report
+        status_details = {'factory_status': self.status(),          # Factory status
+                                'modules_faulted': [False, False, False, False], # List of bools of faulted modules
+                                'modules_ready': [True, True, True, True],       # List of bools of ready modules
+                                'modules_statuses': [('hbw', False, True),('vgr', False, True),('mpo', False, True),('sld', False, True)]}     # List: module_name, faulted, ready
+
+        return status_details
+
+    def reset_factory(self):
+        """ Sends reset task to all modules """
+        pass 
+
     def order(self, job_data):
         """ Load processing job order """
         if self.factory_state == 'ready':
@@ -36,7 +50,6 @@ class FactorySim2():
         else:
             logger.error("Factory not ready. Not accepting job")
             return 1
-
 
     def update(self):
         """
@@ -50,7 +63,7 @@ class FactorySim2():
                 self.factory_state = 'processing'
                 # Start thread
                 logger.info("Starting processing thread")
-                self.processing_thread = threading.Thread(target=self.process)
+                self.processing_thread = threading.Thread(target=self._process_order)
                 self.processing_thread.start()
 
         elif self.factory_state == 'processing':
@@ -76,8 +89,7 @@ class FactorySim2():
         if self.processing_thread is not None:
             self.processing_thread.join()
 
-
-    def process(self):
+    def _process_order(self):
         """ Simulate processing """
         wait_time = self.processing_time / 4
 

@@ -9,7 +9,7 @@ from factory.bit import BIT             # Modbus Bit
 class VGR():
     name = "VGR"
     def __init__(self, modbus):
-        self.Reset =        BIT(200, modbus)
+        self.TaskReset =    BIT(200, modbus)
         self.Task1 =        BIT(210, modbus)
         self.Task2 =        BIT(220, modbus)
         self.Task3 =        BIT(230, modbus)
@@ -29,6 +29,10 @@ class VGR():
             return True
         else:
             return False
+
+    def Reset(self):
+        """ Reset Module """
+        self.TaskReset.pulse()
 
     def StartTask1(self):
         self.Task1.set()
