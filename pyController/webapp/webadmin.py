@@ -56,7 +56,7 @@ def worker():
     # Look at https://stackoverflow.com/questions/15562446/how-to-stop-flask-application-without-using-ctrl-c
     global app
     # app.run(host="0.0.0.0", port=10002, threaded=True) # Development server
-    waitress.serve(app, host='0.0.0.0', port=80)     # Production server
+    waitress.serve(app, host='0.0.0.0', port=8080)     # Production server
     print("HI do you see me?")
 
 def start_webapp():

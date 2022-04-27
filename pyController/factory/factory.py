@@ -144,7 +144,10 @@ class FACTORY():
             self.logger.debug("Factory processing an order")
             if not self._processing_thread.is_alive():
                 self.logger.info("Job completed")
-                self._factory_state = 'ready'
+                if self._check_factory_faults():
+                    self._factory_state = 'fault'
+                else:
+                    self._factory_state = 'ready'
 
         elif self._factory_state == 'offline':
             self.logger.debug("Factory is offline")
