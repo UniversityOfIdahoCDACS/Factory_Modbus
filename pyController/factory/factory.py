@@ -93,7 +93,10 @@ class FACTORY():
         """ Calls Factory.status() and returns detailed information """
         self.status()
         return self._status_details
-
+    
+    def stop(self):
+        """ Stops factory opperations """
+        pass
 
     def update(self):
         """
@@ -108,7 +111,7 @@ class FACTORY():
 
                 # Start thread
                 self.logger.info("Starting processing thread")
-                self._processing_thread = threading.Thread(target=self.process_order)
+                self._processing_thread = threading.Thread(target=self._process_order)
                 self._processing_thread.start()
 
         elif self._factory_state == 'processing':
@@ -138,8 +141,7 @@ class FACTORY():
             self.logger.error("Factory not ready. Not accepting job")
             return 1
 
-
-    def process_order(self):
+    def _process_order(self):
         """ Main order sequence for factory
         Expects self._job_data to be populated
         """
@@ -211,8 +213,7 @@ class FACTORY():
         self._job_data = None # Clear job data that just completed
         return
 
-
-    def restock(self):
+    def _restock(self):
         pass
 
 
