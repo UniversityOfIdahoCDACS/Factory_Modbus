@@ -36,6 +36,10 @@ class SSC_Webcam():
         """
         return False
 
+    def Reset(self):
+        """ Reset Module """
+        self._TaskReset.pulse()
+
     def StartTask1(self):
         """ Execute Task 1 """
         self._Task1.pulse()

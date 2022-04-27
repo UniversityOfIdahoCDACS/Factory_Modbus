@@ -9,9 +9,9 @@ from factory.bit import BIT             # Modbus Bit
 class HBW():
     name = "HBW"
     def __init__(self, modbus):
-        self.Task1 =        BIT(101, modbus)
-        self.Task2 =        BIT(102, modbus)
-        self.Task3 =        BIT(103, modbus)
+        self.Task1 =        BIT(101, modbus)        # Deliver pallet
+        self.Task2 =        BIT(102, modbus)        # Receive pallet
+        self.Task3 =        BIT(103, modbus)        # Reset
         self.slot_x =       REGISTER(105, modbus)
         self.slot_y =       REGISTER(106, modbus)
         self.status_ready = BIT(130, modbus)
@@ -26,6 +26,10 @@ class HBW():
     def IsFault(self):
         """ Return True if module is in a fault state """
         return self.status_fault.read()
+
+    def Reset(self):
+        """ Reset Module """
+        self.Task3.pulse()
 
     def CurrentProgress(self):
         """ Return the current task progress

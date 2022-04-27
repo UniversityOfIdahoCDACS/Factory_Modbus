@@ -44,6 +44,9 @@ class FACTORY():
         self._processing_thread_stop = False # Stop flag for processing thread
         self._job_data = None               # Holds job data such as x, y, cook time and slice info
 
+        # Send Factory reset to all modules
+        self.reset_factory()
+
         self.logger.debug("Factory Modbus Initialized")
 
     def status(self):
@@ -109,6 +112,12 @@ class FACTORY():
                 self._factory_state == 'fault'
                 return True
         return False
+
+    def reset_factory(self):
+        """ Sends reset task to all modules """
+        modules = [self._hbw, self._vgr, self._mpo, self._sld, self._ssc, self._ssc_webcam]
+        for module in modules:
+            module.reset()
 
     def stop(self):
         """ Stops factory opperations """

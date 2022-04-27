@@ -27,6 +27,10 @@ class SLD():
         else:
             return False
 
+    def Reset(self):
+        """ Reset Module """
+        self.TaskReset.pulse()
+
     def StartTask1(self):
         """ Start Task 1
         Pickup puck from HBW and deliver to MPO
