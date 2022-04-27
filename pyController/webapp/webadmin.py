@@ -20,10 +20,7 @@ class WebappStorage():
     Using this as flask apps can't easily be packaged into a class
     """
     def __init__(self):
-        self._add_order_cb = None
-        self._factory_command_cb = None
         self.orchastrator = None
-        self.server = None
         self.job_id = 0
         self.order_id = 0
 
@@ -81,6 +78,23 @@ def start_webapp():
 def myfunction_1():
     """ Test Function """
     print("hello there from myfunction_1")
+    #inv = webapp_storage.orchastrator.inventory.get_inventory()
+    status = webapp_storage.orchastrator.factory.status_detailed()
+    print(status)
+    return "Nothing"
+
+@app.route("/reset_inventory")
+def reset_inventory():
+    """ Reset factory inventory """
+    print("Resetting inventory")
+    webapp_storage.orchastrator.inventory.preset_inventory()
+    return "Nothing"
+
+@app.route("/reset_factory")
+def reset_factory():
+    """ Reset factory modules """
+    print("Resetting factory")
+    webapp_storage.orchastrator.factory.reset_factory()
     return "Nothing"
 
 @app.route("/create-order", methods=["GET", "POST"])
@@ -117,7 +131,12 @@ def create_order():
 @app.route("/index")
 def serve_root():
     """ Serve root index """
-    return render_template("index.html")
+    inv = webapp_storage.orchastrator.inventory.get_inventory()
+    factory_status = webapp_storage.orchastrator.factory.status_detailed()
+    print("root inv: %s" % inv)
+    return render_template("index.html", inv=inv,
+                            factory_status=factory_status['factory_status'],
+                            module_status=factory_status['modules_statuses'])
 
 
 @app.route("/favicon.ico")

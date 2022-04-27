@@ -261,7 +261,7 @@ def main():
     logging.debug("Creating factory object")
     if config['FACTORY_SIM'] == 'True': # Use FactorySim2
         logging.info("Using Factory sim")
-        factory = FactorySim2()
+        factory = FactorySim2(processing_time=30)
     else:
         logging.info("Using Factory Modbus")
         factory = FACTORY(config['FACTORY_IP'], config['FACTORY_PORT'])
@@ -283,8 +283,8 @@ def main():
     orchastrator = Orchastrator(mqtt=mqtt, queue=job_queue, inventory=inventory, factory=factory)
 
     # Setup webadmin object
-    #webadmin.start_webapp()
-    #webadmin.callbacks.set_orchastrator(orchastrator)
+    webadmin.webapp_storage.set_orchastrator(orchastrator)
+    webadmin.start_webapp()
 
     # set mqtt orchastrator callbacks
     mqtt.set_add_job_callback(orchastrator.add_job_callback)

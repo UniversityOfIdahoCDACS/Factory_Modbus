@@ -37,7 +37,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
-        <a href="/index3" class="nav-link">Home</a>
+        <a href="/" class="nav-link">Home</a>
       </li>
     </ul>
 
@@ -92,32 +92,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-          <li class="nav-item has-treeview menu-open">
-            <a href="#" class="nav-link active">
-              <i class="nav-icon fas fa-tachometer-alt"></i>
-              <p>Starter Pages
-                <i class="right fas fa-angle-left"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="#" class="nav-link active">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Active Page</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Inactive Page</p>
-                </a>
-              </li>
-            </ul>
-          </li>
           <li class="nav-item">
-            <a href="#" class="nav-link">
+            <a href="/" class="nav-link">
               <i class="nav-icon fas fa-th"></i>
-              <p>Simple Link</p>
+              <p>Dashboard</p>
             </a>
           </li>
         </ul>
@@ -152,7 +130,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <div class="container-fluid">
         <div class="row">
           <div class="col-lg-6">
-            <div class="card card-primary">
+            <div class="card card-info"> <!-- Factory Status-->
+              <div class="card-header">
+                <h3 class="card-title">Factory Status</h3>
+              </div>
+              <p>Factory Status: {{factory_status}} </p>
+            </div>
+
+            <div class="card card-info"> <!-- Module Statuses-->
               <div class="card-header">
                 <h3 class="card-title">Module Statuses</h3>
               </div>
@@ -160,74 +145,55 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <thead>
                   <tr>
                     <th style="width: 10px">Module</th>
-                    <th>Ready</th>
                     <th>Fault</th>
+                    <th>Ready</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>HBW</td>
-                    <td>hbw_ready</td>
-                    <td>hbw_fault</td>
-                </tr>
-                <tr>
-                    <td>vgr</td>
-                    <td>vgr_ready</td>
-                    <td>vgr_fault</td>
-                </tr>
-                <tr>
-                    <td>mpo</td>
-                    <td>mpo_ready</td>
-                    <td>mpo_fault</td>
-                </tr>
-                <tr>
-                    <td>sld</td>
-                    <td>sld_ready</td>
-                    <td>sld_fault</td>
-                </tr>
-                <tr>
-                    <td>ssc_webcam</td>
-                    <td>ssc_webcam_ready</td>
-                    <td>ssc_webcam_fault</td>
-                </tr>
+                  {% for module in module_status %}
+                    <tr>
+                      <td>{{module[0]}}</td>
+                      <td>{{module[1]}}</td>
+                      <td>{{module[2]}}</td>
+                    </tr>
+                  {% endfor %}
                 </tbody>
               </table>
             </div>
 
-            
-            <div class="card card-primary">
+            <div class="card card-info"> <!-- Inventory-->
               <div class="card-header">
                 <h3 class="card-title">Inventory</h3>
               </div>
+              <p>Note: this table is transformed</p>
               <table class="table table-bordered">
                 <tbody>
-                  <tr>
-                    <td>red</td>
-                    <td>red</td>
-                    <td>red</td>
-                </tr>
-                <tr>
-                    <td>white</td>
-                    <td>white</td>
-                    <td>white</td>
-                </tr>
-                <tr>
-                    <td>blue</td>
-                    <td>blue</td>
-                    <td>blue</td>
-                </tr>
+                  {% for row in inv %}
+                    <tr>
+                    {% for col in row %}
+                      <td>{{col}}</td>
+                    {% endfor %}
+                    </tr>
+                  {% endfor %}
                 </tbody>
               </table>
             </div>
 
-            <div class="card card-primary">
+            <div class="card card-primary"> <!-- Control buttons-->
               <div class="card-header">
-                <h3 class="card-title">My Test Button</h3>
+                <h3 class="card-title">Control Center</h3>
               </div>
-              <button type="button" id="btn_myfunction_1" class="btn btn-block btn-default btn-sm">Test Button</button>
+              <table class="table table-bordered text-center">
+                <tbody>
+                  <tr>
+                    <td><button type="button" id="btn_reset_inventory" class="btn btn-block btn-warning btn-lg">Reset Inventory</button></td>
+                    <td><button type="button" id="btn_reset_factory" class="btn btn-block btn-danger btn-lg">Reset Factory</button></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
-            <div class="card card-primary">
+            <div class="card card-primary"> <!-- Create job-->
               <div class="card-header">
                 <h3 class="card-title">Create Job Order</h3>
               </div>
@@ -239,9 +205,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             <div class="form-group">
                                 <label>Select Color</label>
                                 <select class="form-control" name="order_color" id="order_color">
-                                <option>Red</option>
-                                <option>White</option>
-                                <option>Blue</option>
+                                <option>red</option>
+                                <option>white</option>
+                                <option>blue</option>
                                 </select>
                             </div>
                         </div>
@@ -288,12 +254,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
   <!-- Main Footer -->
   <footer class="main-footer">
-    <!-- To the right -->
-    <div class="float-right d-none d-sm-inline">
-      Anything you want
-    </div>
     <!-- Default to the left -->
-    <p>Copyright &copy; 2014-2019 <a href="https://adminlte.io">AdminLTE.io</a>. All rights reserved.</p>
+    <p><small>&copy; 2014-2019 <a href="https://adminlte.io">AdminLTE.io</a>. All rights reserved.</small></p>
   </footer>
 </div>
 <!-- ./wrapper -->
@@ -308,8 +270,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="{{ url_for("static", filename="dist/js/adminlte.min.js") }}"></script>
 <!-- My button -->
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"> </script>
-<script type=text/javascript> $(function() { $("#btn_myfunction_1").click(function (event) { $.getJSON('/myfunction_1', { },
-function(data) { }); return false; }); }); </script> 
+<script type=text/javascript> $(function() { $("#btn_reset_inventory").click(function (event) { $.getJSON('/reset_inventory', { },function(data) { }); return false; }); }); </script>
+<script type=text/javascript> $(function() { $("#btn_reset_factory").click(function (event) { $.getJSON('/reset_factory', { },function(data) { }); return false; }); }); </script> 
 
 </body>
 </html>
