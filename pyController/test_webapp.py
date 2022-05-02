@@ -2,10 +2,8 @@
 
 from time import sleep
 import logging
-from job_queue import JobQueue
-from inventory import Inventory
 from factory.factory_sim2 import FactorySim2    # Simulated factory
-from pyController import Orchastrator
+from orchastrator import Orchastrator
 import webapp.webadmin as webadmin
 
 logger = logging.getLogger()
@@ -17,17 +15,12 @@ formatter = logging.Formatter('[%(asctime)s] [%(levelname)-5s] [%(name)s] - %(me
 
 def main():
     """ Main program """
-    # Setup Job Queue and Inventory objects
-    job_queue = JobQueue()
-    inventory = Inventory()
-    inventory.preset_inventory()
 
     # Setup factory sim object
     factory = FactorySim2()
 
     # Setup orchastrator object
-    orchastrator = Orchastrator(mqtt=None, queue=job_queue, inventory=inventory, factory=factory)
-
+    orchastrator = Orchastrator(mqtt=None, factory=factory)
 
     logger.info("Starting Webapp")
     webadmin.webapp_storage.set_orchastrator(orchastrator)
